@@ -38,3 +38,18 @@ jobs:
       - name: Check formatting
         working-directory: ./backend
         run: npm run format:check
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [frontend, backend]
+    if: always()
+    steps:
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "CI Pipeline"
+          description: "Pull Request CI checks completed"
+          color: 0x00ff00
+          username: GitHub Actions
