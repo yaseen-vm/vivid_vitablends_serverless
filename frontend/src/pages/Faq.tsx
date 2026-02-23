@@ -13,7 +13,6 @@ const FAQ = () => {
   return (
     <div className="min-h-screen bg-background py-16 px-6">
       <div className="mx-auto max-w-4xl">
-
         {/* Back Button */}
         <div className="mb-8">
           <button
@@ -30,26 +29,26 @@ const FAQ = () => {
         </h1>
 
         <p className="text-center text-muted-foreground mb-12">
-          Find answers to the most common questions about our products and ordering process.
+          Find answers to the most common questions about our products and
+          ordering process.
         </p>
 
         <Accordion type="single" collapsible className="w-full space-y-4">
-
           <AccordionItem value="item-1">
             <AccordionTrigger>
               1. Are your products really preservative-free?
             </AccordionTrigger>
             <AccordionContent>
-              Yes. All our products are made using traditional methods without artificial preservatives.
+              Yes. All our products are made using traditional methods without
+              artificial preservatives.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-2">
-            <AccordionTrigger>
-              2. How long do pickles last?
-            </AccordionTrigger>
+            <AccordionTrigger>2. How long do pickles last?</AccordionTrigger>
             <AccordionContent>
-              When stored properly in a cool, dry place, our pickles last 3–6 months. Always use a dry spoon.
+              When stored properly in a cool, dry place, our pickles last 3–6
+              months. Always use a dry spoon.
             </AccordionContent>
           </AccordionItem>
 
@@ -63,36 +62,27 @@ const FAQ = () => {
           </AccordionItem>
 
           <AccordionItem value="item-4">
-            <AccordionTrigger>
-              4. Do you offer COD?
-            </AccordionTrigger>
+            <AccordionTrigger>4. Do you offer COD?</AccordionTrigger>
             <AccordionContent>
-              Currently, orders are confirmed via WhatsApp. Payment methods will be confirmed during order processing.
+              Currently, orders are confirmed via WhatsApp. Payment methods will
+              be confirmed during order processing.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-5">
-            <AccordionTrigger>
-              5. Can I customize combo packs?
-            </AccordionTrigger>
+            <AccordionTrigger>5. Can I customize combo packs?</AccordionTrigger>
             <AccordionContent>
               Yes. Please contact us on WhatsApp for custom bundles.
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-6">
-            <AccordionTrigger>
-              6. Where do you deliver?
-            </AccordionTrigger>
-            <AccordionContent>
-              We deliver across India.
-            </AccordionContent>
+            <AccordionTrigger>6. Where do you deliver?</AccordionTrigger>
+            <AccordionContent>We deliver across India.</AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="item-7">
-            <AccordionTrigger>
-              7. How do I place an order?
-            </AccordionTrigger>
+            <AccordionTrigger>7. How do I place an order?</AccordionTrigger>
             <AccordionContent>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Add products to cart</li>
@@ -102,9 +92,7 @@ const FAQ = () => {
               </ul>
             </AccordionContent>
           </AccordionItem>
-
         </Accordion>
-
       </div>
     </div>
   );

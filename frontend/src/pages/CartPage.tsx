@@ -212,7 +212,6 @@ const CartPage = () => {
             {/* Bottom Mobile Bar */}
             <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white p-4 md:hidden">
               <div className="flex items-center justify-between gap-3">
-
                 <div>
                   <p className="text-xs text-gray-500">Total</p>
                   <p className="text-lg font-bold">₹ {total}</p>
@@ -239,52 +238,55 @@ const CartPage = () => {
 
             <div className="h-24 md:hidden" />
             {showDetails && (
-  <div
-    className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden"
-    onClick={() => setShowDetails(false)} // 👈 Close when clicking overlay
-  >
-    <div
-      className="w-full max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white p-6"
-      onClick={(e) => e.stopPropagation()} // 👈 Prevent closing when clicking inside
-    >
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-bold">Cart Details</h3>
-        <button
-          onClick={() => setShowDetails(false)}
-          className="text-sm text-gray-500"
-        >
-          Close
-        </button>
-      </div>
+              <div
+                className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 md:hidden"
+                onClick={() => setShowDetails(false)} // 👈 Close when clicking overlay
+              >
+                <div
+                  className="w-full max-h-[70vh] overflow-y-auto rounded-t-3xl bg-white p-6"
+                  onClick={(e) => e.stopPropagation()} // 👈 Prevent closing when clicking inside
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-lg font-bold">Cart Details</h3>
+                    <button
+                      onClick={() => setShowDetails(false)}
+                      className="text-sm text-gray-500"
+                    >
+                      Close
+                    </button>
+                  </div>
 
-      <div className="space-y-4">
-        {cart.map((item) => (
-          <div key={item.id} className="flex justify-between text-sm">
-            <div>
-              <p className="font-medium">
-                {item.quantity}x {item.name}
-              </p>
-              <p className="text-xs text-gray-500">
-                ₹ {item.price} each
-              </p>
-            </div>
+                  <div className="space-y-4">
+                    {cart.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between text-sm"
+                      >
+                        <div>
+                          <p className="font-medium">
+                            {item.quantity}x {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            ₹ {item.price} each
+                          </p>
+                        </div>
 
-            <span className="font-semibold">
-              ₹ {item.price * item.quantity}
-            </span>
-          </div>
-        ))}
-      </div>
+                        <span className="font-semibold">
+                          ₹ {item.price * item.quantity}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
 
-      <div className="my-4 h-px bg-gray-200" />
+                  <div className="my-4 h-px bg-gray-200" />
 
-      <div className="flex justify-between font-bold">
-        <span>Total</span>
-        <span>₹ {total}</span>
-      </div>
-    </div>
-  </div>
-)}
+                  <div className="flex justify-between font-bold">
+                    <span>Total</span>
+                    <span>₹ {total}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

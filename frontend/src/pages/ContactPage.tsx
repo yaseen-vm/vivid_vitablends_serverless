@@ -65,7 +65,6 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-background py-16 px-6">
       <div className="mx-auto max-w-6xl">
-
         {/* Back Button */}
         <div className="mb-8">
           <button
@@ -77,19 +76,16 @@ const Contact = () => {
           </button>
         </div>
 
-        <h1 className="text-4xl font-bold text-center mb-4">
-          Contact Us
-        </h1>
+        <h1 className="text-4xl font-bold text-center mb-4">Contact Us</h1>
 
         <p className="text-center text-muted-foreground mb-12">
-          We'd love to hear from you. Reach out using the details below or send us a message.
+          We'd love to hear from you. Reach out using the details below or send
+          us a message.
         </p>
 
         <div className="grid md:grid-cols-2 gap-10">
-
           {/* LEFT SIDE - CONTACT INFO */}
           <div className="space-y-6">
-
             {/* Phone */}
             <Card className="transition hover:shadow-lg">
               <CardContent className="flex items-center gap-4 p-6">
@@ -174,14 +170,20 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <Input placeholder="Email Address" {...form.register("email")} />
+                  <Input
+                    placeholder="Email Address"
+                    {...form.register("email")}
+                  />
                   <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.email?.message}
                   </p>
                 </div>
 
                 <div>
-                  <Input placeholder="Phone Number" {...form.register("phone")} />
+                  <Input
+                    placeholder="Phone Number"
+                    {...form.register("phone")}
+                  />
                   <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.phone?.message}
                   </p>
@@ -250,7 +252,6 @@ const Contact = () => {
             </a>
           </div>
         </div>
-
       </div>
     </div>
   );

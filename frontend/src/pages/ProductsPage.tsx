@@ -99,34 +99,34 @@ const ProductsPage = () => {
       </div>
 
       {/* ================= PAGE CONTENT ================= */}
-     <div className="px-5 py-10 md:px-10">
-  <div className="mx-auto max-w-7xl">
+      <div className="px-5 py-10 md:px-10">
+        <div className="mx-auto max-w-7xl">
+          {/* ================= PAGE TAGLINE ================= */}
+          <div className="mb-10 text-center">
+            <p className="text-sm md:text-2xl font-semibold text-foreground">
+              Pure ingredients, traditional recipes, and wholesome goodness in
+              every product.
+            </p>
+          </div>
 
-    {/* ================= PAGE TAGLINE ================= */}
-    <div className="mb-10 text-center">
-      <p className="text-sm md:text-2xl font-semibold text-foreground">
-        Pure ingredients, traditional recipes, and wholesome goodness in every product.
-      </p>
-    </div>
-
-    {/* ================= TAB BAR ================= */}
-    <div className="mb-14 flex justify-center">
-      <div className="flex rounded-full bg-card p-1 shadow-sm">
-        {categories.map((cat) => (
-          <button
-            key={cat.value}
-            onClick={() => setActiveCategory(cat.value)}
-            className={`rounded-full px-4 py-0 text-sm font-sans transition-all ${
-              activeCategory === cat.value
-                ? "bg-accent text-accent-foreground shadow"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-    </div>
+          {/* ================= TAB BAR ================= */}
+          <div className="mb-14 flex justify-center">
+            <div className="flex rounded-full bg-card p-1 shadow-sm">
+              {categories.map((cat) => (
+                <button
+                  key={cat.value}
+                  onClick={() => setActiveCategory(cat.value)}
+                  className={`rounded-full px-4 py-0 text-sm font-sans transition-all ${
+                    activeCategory === cat.value
+                      ? "bg-accent text-accent-foreground shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* ================= PRODUCT GRID ================= */}
           {products.length === 0 ? (
@@ -179,7 +179,6 @@ const ProductsPage = () => {
               ))}
             </div>
           )}
-
         </div>
       </div>
     </main>

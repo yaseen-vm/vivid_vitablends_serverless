@@ -8,7 +8,6 @@ const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background py-16 px-6">
       <div className="mx-auto max-w-4xl">
-
         {/* Back Button */}
         <div className="mb-8">
           <button
@@ -29,21 +28,19 @@ const PrivacyPolicy = () => {
         </p>
 
         <p className="text-center text-muted-foreground mb-12">
-          At Vivid Vitablends, we value your privacy and are committed to protecting your information.
+          At Vivid Vitablends, we value your privacy and are committed to
+          protecting your information.
         </p>
 
         <Card>
           <CardContent className="space-y-8 p-8">
-
             {/* 1 */}
             <div>
               <h2 className="text-xl font-semibold mb-3">
                 1. Information We Collect
               </h2>
 
-              <p className="text-muted-foreground mb-3">
-                We may collect:
-              </p>
+              <p className="text-muted-foreground mb-3">We may collect:</p>
 
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>Name</li>
@@ -72,7 +69,8 @@ const PrivacyPolicy = () => {
               </ul>
 
               <p className="text-muted-foreground">
-                We do not sell, trade, or share your personal information with third parties for marketing purposes.
+                We do not sell, trade, or share your personal information with
+                third parties for marketing purposes.
               </p>
             </div>
 
@@ -83,37 +81,34 @@ const PrivacyPolicy = () => {
               </h2>
 
               <p className="text-muted-foreground">
-                We do not store your payment details. Payments are handled securely via verified payment methods.
+                We do not store your payment details. Payments are handled
+                securely via verified payment methods.
               </p>
             </div>
 
             {/* 4 */}
             <div>
-              <h2 className="text-xl font-semibold mb-3">
-                4. Data Security
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">4. Data Security</h2>
 
               <p className="text-muted-foreground">
-                We take reasonable measures to protect your data from unauthorized access.
+                We take reasonable measures to protect your data from
+                unauthorized access.
               </p>
             </div>
 
             {/* 5 */}
             <div>
-              <h2 className="text-xl font-semibold mb-3">
-                5. Cookies
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">5. Cookies</h2>
 
               <p className="text-muted-foreground">
-                Our website may use basic cookies to enhance browsing experience.
+                Our website may use basic cookies to enhance browsing
+                experience.
               </p>
             </div>
 
             {/* 6 */}
             <div>
-              <h2 className="text-xl font-semibold mb-3">
-                6. Contact
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">6. Contact</h2>
 
               <p className="text-muted-foreground mb-4">
                 If you have questions about this policy, contact:
@@ -127,7 +122,6 @@ const PrivacyPolicy = () => {
                 hello@vividvitablends.com
               </a>
             </div>
-
           </CardContent>
         </Card>
 
@@ -140,7 +134,6 @@ const PrivacyPolicy = () => {
             <li>Disclaimer (especially for health powders)</li>
           </ul>
         </div>
-
       </div>
     </div>
   );

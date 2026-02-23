@@ -8,7 +8,6 @@ const ReturnPolicy = () => {
   return (
     <div className="min-h-screen bg-background py-16 px-6">
       <div className="mx-auto max-w-4xl">
-
         {/* Back Button */}
         <div className="mb-8">
           <button
@@ -24,15 +23,13 @@ const ReturnPolicy = () => {
           🔄 Return & Refund Policy
         </h1>
 
-       
-
         <p className="text-center text-muted-foreground mb-12">
-          Due to the nature of our food products, we maintain a strict but fair return policy.
+          Due to the nature of our food products, we maintain a strict but fair
+          return policy.
         </p>
 
         <Card>
           <CardContent className="space-y-8 p-8">
-
             {/* 1 */}
             <div>
               <h2 className="text-xl font-semibold mb-3">
@@ -49,9 +46,7 @@ const ReturnPolicy = () => {
                 <li>Seal is broken upon delivery</li>
               </ul>
 
-              <p className="text-muted-foreground mb-2">
-                You must:
-              </p>
+              <p className="text-muted-foreground mb-2">You must:</p>
 
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>Inform us within 24 hours</li>
@@ -78,13 +73,9 @@ const ReturnPolicy = () => {
 
             {/* 3 */}
             <div>
-              <h2 className="text-xl font-semibold mb-3">
-                3. Refund Process
-              </h2>
+              <h2 className="text-xl font-semibold mb-3">3. Refund Process</h2>
 
-              <p className="text-muted-foreground mb-3">
-                If approved:
-              </p>
+              <p className="text-muted-foreground mb-3">If approved:</p>
 
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>Refund will be processed within 5–7 business days</li>
@@ -92,13 +83,12 @@ const ReturnPolicy = () => {
               </ul>
 
               <p className="mt-4 text-muted-foreground">
-                Since we are a small-batch homemade brand, we request your understanding.
+                Since we are a small-batch homemade brand, we request your
+                understanding.
               </p>
             </div>
-
           </CardContent>
         </Card>
-
       </div>
     </div>
   );

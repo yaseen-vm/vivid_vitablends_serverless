@@ -18,10 +18,16 @@ const supportLinks = [
 const Footer = () => {
   const navigate = useNavigate();
 
-  const handleQuickLink = (link: typeof quickLinks[0]) => {
+  const handleQuickLink = (link: (typeof quickLinks)[0]) => {
     if (link.scrollTo) {
       navigate("/");
-      setTimeout(() => document.getElementById(link.scrollTo!)?.scrollIntoView({ behavior: "smooth" }), 100);
+      setTimeout(
+        () =>
+          document
+            .getElementById(link.scrollTo!)
+            ?.scrollIntoView({ behavior: "smooth" }),
+        100
+      );
     } else if (link.path) {
       navigate(link.path);
     }
@@ -30,7 +36,6 @@ const Footer = () => {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-7xl px-5 py-12 md:px-10">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-
           {/* Brand Section */}
           <div className="md:col-span-2">
             <h3 className="font-display text-xl font-bold text-primary">
@@ -81,18 +86,18 @@ const Footer = () => {
               Quick Links
             </h4>
 
-      <ul className="space-y-2.5">
-  {quickLinks.map((link) => (
-    <li key={link.name}>
-      <button
-        onClick={() => handleQuickLink(link)}
-        className="text-sm text-muted-foreground transition-colors hover:text-accent cursor-pointer"
-      >
-        {link.name}
-      </button>
-    </li>
-  ))}
-</ul>
+            <ul className="space-y-2.5">
+              {quickLinks.map((link) => (
+                <li key={link.name}>
+                  <button
+                    onClick={() => handleQuickLink(link)}
+                    className="text-sm text-muted-foreground transition-colors hover:text-accent cursor-pointer"
+                  >
+                    {link.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Support */}

@@ -24,8 +24,8 @@ const HeroSection = () => {
             loading="eager"
           />
         </>
-{/* Bottom Fade Effect */}
-<div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50"></div>
+        {/* Bottom Fade Effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/50"></div>
         {/* Dark Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
         {/* Hero Content */}
