@@ -151,3 +151,5 @@ The project includes GitHub Actions workflow for automated deployment. Configure
 ## License
 
 MIT
+
+<!-- Deployment trigger -->
