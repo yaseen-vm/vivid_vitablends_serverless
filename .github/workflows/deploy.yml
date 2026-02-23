@@ -59,12 +59,17 @@ jobs:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_BUCKET_ID: ${{ secrets.R2_PUBLIC_BUCKET_ID }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
-          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD
+          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
           script: |
             set -e
             
@@ -84,6 +89,11 @@ jobs:
             DIRECT_URL=${DIRECT_URL}
             JWT_SECRET=${JWT_SECRET}
             POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+            R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+            R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+            R2_BUCKET_NAME=${R2_BUCKET_NAME}
+            R2_PUBLIC_BUCKET_ID=${R2_PUBLIC_BUCKET_ID}
             EOF
 
             chmod +x deploy.sh
