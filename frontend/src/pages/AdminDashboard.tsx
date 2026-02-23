@@ -14,9 +14,12 @@ import { ProductsManagement } from "@/components/admin/ProductsManagement";
 import { ReviewsManagement } from "@/components/admin/ReviewsManagement";
 import { useAdminProducts } from "@/hooks/useAdminProducts";
 import { useAdminReviews } from "@/hooks/useAdminReviews";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { authStorage } from "@/lib/storage";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { logout, isLoading: logoutLoading } = useAdminAuth();
   const {
     products,
     stats: productStats,
@@ -25,15 +28,13 @@ const AdminDashboard = () => {
   const { stats: reviewStats, loading: reviewsLoading } = useAdminReviews();
 
   useEffect(() => {
-    if (!sessionStorage.getItem("adminAuth")) {
+    if (!authStorage.getAuth()) {
       navigate("/sys-admin-portal");
     }
   }, [navigate]);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("adminAuth");
-    sessionStorage.removeItem("adminToken");
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -48,8 +49,13 @@ const AdminDashboard = () => {
               Manage your products and reviews
             </p>
           </div>
-          <Button onClick={handleLogout} variant="outline">
-            <LogOut className="mr-2 h-4 w-4" /> Logout
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            disabled={logoutLoading}
+          >
+            <LogOut className="mr-2 h-4 w-4" />{" "}
+            {logoutLoading ? "Logging out..." : "Logout"}
           </Button>
         </div>
 

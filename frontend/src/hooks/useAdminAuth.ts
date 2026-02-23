@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { loginAdmin } from "@/services/api/adminApiClient";
+import { loginAdmin, logoutAdmin } from "@/services/api/adminApiClient";
+import { authStorage } from "@/lib/storage";
 import type { LoginCredentials } from "@/types/admin";
 
 export const useAdminAuth = () => {
@@ -16,8 +17,8 @@ export const useAdminAuth = () => {
 
     try {
       const response = await loginAdmin(credentials);
-      sessionStorage.setItem("adminToken", response.data.token);
-      sessionStorage.setItem("adminAuth", "true");
+      authStorage.setToken(response.data.token);
+      authStorage.setAuth("true");
 
       toast({
         title: "Login successful",
@@ -39,5 +40,26 @@ export const useAdminAuth = () => {
     }
   };
 
-  return { login, isLoading, error };
+  const logout = async () => {
+    setIsLoading(true);
+
+    try {
+      await logoutAdmin();
+      authStorage.clear();
+
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+
+      navigate("/sys-admin-login");
+    } catch (err) {
+      authStorage.clear();
+      navigate("/sys-admin-login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { login, logout, isLoading, error };
 };

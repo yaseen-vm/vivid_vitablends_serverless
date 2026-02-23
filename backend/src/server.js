@@ -1,6 +1,7 @@
 import './loadEnv.js';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import config from './config/index.js';
 import logger from './utils/logger.js';
 import './utils/redis.js';
@@ -14,8 +15,14 @@ import orderRoutes from './routes/order.routes.js';
 const app = express();
 
 app.set('etag', false);
-app.use(cors({ origin: config.corsOrigin }));
+app.use(
+  cors({
+    origin: config.corsOrigin,
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 app.use(requestLogger);
 
 app.use('/api', healthRoutes);

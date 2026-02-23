@@ -10,7 +10,7 @@ export interface LoginResponse {
   data: {
     token: string;
     user: Admin;
-    expiresIn: number;
+    expiresIn: string;
   };
 }
 

@@ -7,6 +7,7 @@ export const loginAdmin = async (
   const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(credentials),
   });
 
@@ -17,4 +18,16 @@ export const loginAdmin = async (
   }
 
   return data;
+};
+
+export const logoutAdmin = async (): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.message || "Logout failed");
+  }
 };
