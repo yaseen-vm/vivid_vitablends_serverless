@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import sharp from 'sharp';
 import * as imageRepository from '../repositories/image.repository.js';
 import { parseBase64Image, processImage } from '../utils/imageProcessor.js';
 import config from '../config/index.js';
@@ -17,9 +18,12 @@ export const upload = async (base64Image) => {
 
   logger.info('Processing image for upload');
   const optimizedBuffer = await processImage(buffer);
-  const key = `${config.r2.pathPrefix}${Date.now()}-${crypto.randomBytes(8).toString('hex')}.jpg`;
+  const metadata = await sharp(optimizedBuffer).metadata();
+  const ext = metadata.format === 'png' ? 'png' : 'jpg';
+  const contentType = metadata.format === 'png' ? 'image/png' : 'image/jpeg';
+  const key = `${config.r2.pathPrefix}${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
 
-  await imageRepository.uploadToS3(optimizedBuffer, key);
+  await imageRepository.uploadToS3(optimizedBuffer, key, contentType);
   const url = `https://pub-${config.r2.publicBucketId}.r2.dev/${key}`;
 
   logger.info('Image uploaded successfully', { key });

@@ -1,6 +1,6 @@
+import './loadEnv.js';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import config from './config/index.js';
 import logger from './utils/logger.js';
 import './utils/redis.js';
@@ -10,8 +10,6 @@ import adminRoutes from './routes/admin.routes.js';
 import productRoutes from './routes/product.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import orderRoutes from './routes/order.routes.js';
-
-dotenv.config();
 
 const app = express();
 
