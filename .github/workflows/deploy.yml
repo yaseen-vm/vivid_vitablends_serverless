@@ -52,14 +52,22 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
-          script_stop: true
-          envs: DOCKER_USERNAME,DOCKER_PASSWORD,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD
+          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD
           script: |
+            set -e
+            
             if [ ! -d "/opt/vivid_vitablends" ]; then
               sudo mkdir -p /opt/vivid_vitablends
               sudo chown $USER:$USER /opt/vivid_vitablends
@@ -71,7 +79,6 @@ jobs:
               git reset --hard origin/main
             fi
 
-            echo "Creating production env file..."
             cat > .env <<EOF
             DATABASE_URL=${DATABASE_URL}
             DIRECT_URL=${DIRECT_URL}

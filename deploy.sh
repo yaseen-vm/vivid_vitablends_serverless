@@ -16,9 +16,9 @@ fi
 echo "Using: $COMPOSE_CMD"
 
 # Docker Hub login
-if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_PASSWORD" ]; then
+if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_TOKEN" ]; then
   echo "🔐 Logging into Docker Hub..."
-  echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
 fi
 
 # Clean unused images only (safe)
