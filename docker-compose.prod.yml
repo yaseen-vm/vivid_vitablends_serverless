@@ -29,6 +29,26 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    mem_limit: 128m
+    mem_reservation: 64m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   backend:
     image: vividvitablendsdev/vividvitablends:backend-latest
     expose:
@@ -45,9 +65,14 @@ services:
       R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
       R2_BUCKET_NAME: ${R2_BUCKET_NAME}
       R2_PUBLIC_BUCKET_ID: ${R2_PUBLIC_BUCKET_ID}
+      REDIS_ENABLED: true
+      REDIS_URL: redis://redis:6379
+      REDIS_TTL: 3600
       NODE_OPTIONS: --max-old-space-size=256
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     mem_limit: 384m
@@ -105,6 +130,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   nginx_logs:
 
 networks:

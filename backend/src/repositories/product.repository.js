@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma.js';
+import { clearCache } from '../middleware/cache.js';
 
 export const findFeatured = async () => {
   return prisma.product.findMany({
@@ -28,18 +29,18 @@ export const findById = async (id) => {
 };
 
 export const create = async (data) => {
-  return prisma.product.create({ data });
+  const product = await prisma.product.create({ data });
+  await clearCache('/api/products*');
+  return product;
 };
 
 export const update = async (id, data) => {
-  return prisma.product.update({
-    where: { id },
-    data,
-  });
+  const product = await prisma.product.update({ where: { id }, data });
+  await clearCache('/api/products*');
+  return product;
 };
 
 export const deleteProduct = async (id) => {
-  return prisma.product.delete({
-    where: { id },
-  });
+  await prisma.product.delete({ where: { id } });
+  await clearCache('/api/products*');
 };

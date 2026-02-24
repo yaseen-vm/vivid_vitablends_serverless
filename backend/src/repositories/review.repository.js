@@ -1,4 +1,5 @@
 import prisma from '../utils/prisma.js';
+import { clearCache } from '../middleware/cache.js';
 
 export const findAll = async (filters = {}) => {
   const where = {};
@@ -12,7 +13,9 @@ export const findAll = async (filters = {}) => {
 };
 
 export const create = async (data) => {
-  return prisma.review.create({ data });
+  const review = await prisma.review.create({ data });
+  await clearCache('/api/reviews*');
+  return review;
 };
 
 export const findHeroReviews = async () => {
@@ -23,5 +26,10 @@ export const findHeroReviews = async () => {
 };
 
 export const updateShowInHero = async (id, showInHero) => {
-  return prisma.review.update({ where: { id }, data: { showInHero } });
+  const review = await prisma.review.update({
+    where: { id },
+    data: { showInHero },
+  });
+  await clearCache('/api/reviews*');
+  return review;
 };

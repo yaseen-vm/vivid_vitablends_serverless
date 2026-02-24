@@ -4,7 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import config from './config/index.js';
 import logger from './utils/logger.js';
-import './utils/redis.js';
+import { initRedis } from './utils/redis.js';
 import { requestLogger } from './middleware/requestLogger.js';
 import healthRoutes from './routes/health.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -12,6 +12,8 @@ import productRoutes from './routes/product.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import messageRoutes from './routes/message.routes.js';
+
+await initRedis();
 
 const app = express();
 
