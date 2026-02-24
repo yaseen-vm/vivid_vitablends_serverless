@@ -23,11 +23,27 @@ export const create = async (data) => {
     throw error;
   }
 
-  if (data.rating < 1 || data.rating > 5) {
+  if (typeof data.name !== 'string' || data.name.trim().length < 2) {
+    logger.warn('Invalid name', { name: data.name });
+    const error = new Error('Name must be at least 2 characters');
+    error.statusCode = 400;
+    error.code = 'INVALID_NAME';
+    throw error;
+  }
+
+  if (!Number.isInteger(data.rating) || data.rating < 1 || data.rating > 5) {
     logger.warn('Invalid rating', { rating: data.rating });
     const error = new Error('Rating must be between 1 and 5');
     error.statusCode = 400;
     error.code = 'INVALID_RATING';
+    throw error;
+  }
+
+  if (typeof data.comment !== 'string' || data.comment.trim().length < 5) {
+    logger.warn('Invalid comment', { comment: data.comment });
+    const error = new Error('Comment must be at least 5 characters');
+    error.statusCode = 400;
+    error.code = 'INVALID_COMMENT';
     throw error;
   }
 

@@ -37,7 +37,7 @@ const ContactCards = () => {
 
   const mutation = useReviewSubmit();
   const isFormValid =
-    rating > 0 && name.trim().length >= 2 && message.trim().length >= 10;
+    rating > 0 && name.trim().length >= 2 && message.trim().length >= 5;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
