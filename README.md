@@ -148,6 +148,56 @@ Create `.env` file if needed for API endpoints.
 
 The project includes GitHub Actions workflow for automated deployment. Configure your deployment settings in `.github/workflows/deploy.yml`.
 
+## Security
+
+### Security Fixes Applied
+
+This project has been audited and secured against common vulnerabilities:
+
+- ✅ **XSS Protection**: Removed `dangerouslySetInnerHTML` usage
+- ✅ **Package Security**: Using scoped package names (`@vivid/backend`, `@vivid/frontend`)
+- ✅ **CDN Security**: Fonts loaded with proper CORS headers
+- ✅ **Input Validation**: Safe image processing with Sharp library
+
+### Running Security Audits
+
+**Windows:**
+```bash
+security-audit.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x security-audit.sh
+./security-audit.sh
+```
+
+**Manual:**
+```bash
+# Backend
+cd backend
+npm audit
+npm audit fix
+
+# Frontend
+cd frontend
+npm audit
+npm audit fix
+```
+
+### Security Tools (Recommended)
+
+```bash
+# Install Snyk for dependency scanning
+npm install -g snyk
+snyk test
+
+# Install ESLint security plugin
+npm install --save-dev eslint-plugin-security
+```
+
+See [SECURITY_FIXES.md](./SECURITY_FIXES.md) for detailed security documentation.
+
 ## License
 
 MIT
