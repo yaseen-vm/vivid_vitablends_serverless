@@ -1,5 +1,6 @@
 import { Mail, Phone, MessageCircle, Star } from "lucide-react";
 import { useState } from "react";
+import { useReviewSubmit } from "@/hooks/useReviewSubmit";
 
 const getStarColor = (value: number) => {
   switch (value) {
@@ -31,6 +32,28 @@ const contacts = [
 const ContactCards = () => {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+
+  const mutation = useReviewSubmit();
+  const isFormValid =
+    rating > 0 && name.trim().length >= 2 && message.trim().length >= 10;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    mutation.mutate(
+      { name, rating, comment: message },
+      {
+        onSuccess: () => {
+          setRating(0);
+          setName("");
+          setMessage("");
+        },
+      }
+    );
+  };
 
   return (
     <section className="section-padding bg-secondary">
@@ -71,7 +94,7 @@ const ContactCards = () => {
             Leave Us a Message
           </h3>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* ⭐ Star Rating */}
             <div className="text-center">
               <p className="mb-3 text-sm font-medium text-foreground">
@@ -109,6 +132,8 @@ const ContactCards = () => {
               <input
                 type="text"
                 placeholder="Your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
             </div>
@@ -121,15 +146,18 @@ const ContactCards = () => {
               <textarea
                 rows={4}
                 placeholder="Share your experience or question..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="w-full resize-none rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90"
+              disabled={!isFormValid || mutation.isPending}
+              className="w-full rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Submit Message
+              {mutation.isPending ? "Submitting..." : "Submit Message"}
             </button>
           </form>
         </div>

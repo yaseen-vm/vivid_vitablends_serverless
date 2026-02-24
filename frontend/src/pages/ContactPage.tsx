@@ -1,4 +1,3 @@
-import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,50 +15,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { toast } from "sonner";
+import { useMessageSubmit } from "@/hooks/useMessageSubmit";
 
-// --------------------
-// ZOD VALIDATION
-// --------------------
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email"),
-  phone: z.string().min(10, "Enter a valid phone number"),
-  subject: z.string().min(3, "Subject is required"),
+  phone: z.string().optional(),
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
 
-// --------------------
-// MOCK API CALL
-// --------------------
-const sendContactForm = async (data: ContactFormValues) => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(data), 1500);
-  });
-};
-
 const Contact = () => {
   const navigate = useNavigate();
+  const mutation = useMessageSubmit();
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
-  });
-
-  const mutation = useMutation({
-    mutationFn: sendContactForm,
-    onSuccess: () => {
-      toast.success("Message sent successfully!");
-      form.reset();
-    },
-    onError: () => {
-      toast.error("Something went wrong. Try again.");
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      message: "",
     },
   });
 
   const onSubmit = (data: ContactFormValues) => {
-    mutation.mutate(data);
+    mutation.mutate(data, {
+      onSuccess: () => form.reset(),
+    });
   };
 
   return (
@@ -181,18 +165,11 @@ const Contact = () => {
 
                 <div>
                   <Input
-                    placeholder="Phone Number"
+                    placeholder="Phone Number (Optional)"
                     {...form.register("phone")}
                   />
                   <p className="text-sm text-red-500 mt-1">
                     {form.formState.errors.phone?.message}
-                  </p>
-                </div>
-
-                <div>
-                  <Input placeholder="Subject" {...form.register("subject")} />
-                  <p className="text-sm text-red-500 mt-1">
-                    {form.formState.errors.subject?.message}
                   </p>
                 </div>
 
@@ -209,8 +186,8 @@ const Contact = () => {
 
                 <Button
                   type="submit"
-                  className="w-full"
-                  disabled={mutation.isPending}
+                  className="w-full disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={mutation.isPending || !form.formState.isValid}
                 >
                   {mutation.isPending ? "Sending..." : "Send Message"}
                 </Button>

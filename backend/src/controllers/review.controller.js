@@ -14,3 +14,12 @@ export const getAll = async (req, res, next) => {
     next(error);
   }
 };
+
+export const create = async (req, res, next) => {
+  try {
+    const review = await reviewService.create(req.body);
+    res.status(201).json({ success: true, data: review });
+  } catch (error) {
+    next(error);
+  }
+};

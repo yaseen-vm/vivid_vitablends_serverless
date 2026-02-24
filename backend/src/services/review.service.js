@@ -13,3 +13,24 @@ export const getAll = async (filters) => {
   logger.info('Fetching reviews', { filters });
   return reviewRepository.findAll(filters);
 };
+
+export const create = async (data) => {
+  if (!data.name || !data.rating || !data.comment) {
+    logger.warn('Missing required fields', { data });
+    const error = new Error('Name, rating, and comment are required');
+    error.statusCode = 400;
+    error.code = 'MISSING_FIELDS';
+    throw error;
+  }
+
+  if (data.rating < 1 || data.rating > 5) {
+    logger.warn('Invalid rating', { rating: data.rating });
+    const error = new Error('Rating must be between 1 and 5');
+    error.statusCode = 400;
+    error.code = 'INVALID_RATING';
+    throw error;
+  }
+
+  logger.info('Creating review', { name: data.name, rating: data.rating });
+  return reviewRepository.create(data);
+};
