@@ -13,9 +13,11 @@ import reviewRoutes from './routes/review.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import messageRoutes from './routes/message.routes.js';
 
-await initRedis();
-
 const app = express();
+
+initRedis().catch((err) => {
+  logger.error('Redis initialization failed, continuing without cache', err);
+});
 
 app.set('etag', false);
 app.use(
