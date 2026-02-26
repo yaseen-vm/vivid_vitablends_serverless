@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -314,6 +315,11 @@ export const ProductsManagement = () => {
             <DialogTitle>
               {editingProduct ? "Edit Product" : "Create Product"}
             </DialogTitle>
+            <DialogDescription>
+              {editingProduct
+                ? "Update product details below"
+                : "Fill in the details to create a new product"}
+            </DialogDescription>
           </DialogHeader>
           <ProductForm
             product={editingProduct}

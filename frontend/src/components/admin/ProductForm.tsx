@@ -79,7 +79,14 @@ export const ProductForm = ({
   };
 
   const handleSubmit = async (data: ProductFormData) => {
-    await onSubmit(data);
+    const submitData = { ...data };
+    if (!submitData.originalPrice || submitData.originalPrice === 0) {
+      delete submitData.originalPrice;
+    }
+    if (!submitData.badge || submitData.badge.trim() === "") {
+      delete submitData.badge;
+    }
+    await onSubmit(submitData);
     form.reset();
   };
 
