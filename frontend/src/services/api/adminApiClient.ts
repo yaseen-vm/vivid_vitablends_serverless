@@ -1,6 +1,21 @@
 import { API_BASE_URL } from "@/lib/config";
 import type { LoginCredentials, LoginResponse } from "@/types/admin";
 
+export const refreshToken = async (): Promise<{ token: string; expiresIn: string }> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/refresh`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Token refresh failed");
+  }
+
+  return data.data;
+};
+
 export const loginAdmin = async (
   credentials: LoginCredentials
 ): Promise<LoginResponse> => {
