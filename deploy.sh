@@ -31,7 +31,7 @@ $COMPOSE_CMD -f docker-compose.prod.yml pull
 
 # Zero downtime restart
 echo "▶️ Starting containers..."
-$COMPOSE_CMD -f docker-compose.prod.yml up -d --remove-orphans
+$COMPOSE_CMD -f docker-compose.prod.yml up -d --remove-orphans --force-recreate nginx
 
 # Wait for DB readiness
 echo "⏳ Waiting for database..."
