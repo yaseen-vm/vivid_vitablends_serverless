@@ -57,8 +57,15 @@ import {
 import { Product } from "@/types/Product";
 
 export const ProductsManagement = () => {
-  const { products, loading, createProduct, updateProduct, deleteProduct } =
-    useAdminProducts();
+  const {
+    products,
+    categories,
+    loading,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    createCategory,
+  } = useAdminProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -157,9 +164,11 @@ export const ProductsManagement = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="health">Health</SelectItem>
-                <SelectItem value="pickle">Pickle</SelectItem>
-                <SelectItem value="combo">Combo</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select value={featuredFilter} onValueChange={setFeaturedFilter}>
@@ -325,6 +334,8 @@ export const ProductsManagement = () => {
             product={editingProduct}
             onSubmit={handleSubmit}
             onCancel={() => setDialogOpen(false)}
+            categories={categories}
+            onCreateCategory={createCategory}
           />
         </DialogContent>
       </Dialog>

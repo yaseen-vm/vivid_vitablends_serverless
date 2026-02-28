@@ -21,7 +21,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Product } from "@/types/Product";
+import { Plus } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -40,16 +48,22 @@ interface ProductFormProps {
   product?: Product;
   onSubmit: (data: ProductFormData) => Promise<void>;
   onCancel: () => void;
+  categories?: string[];
+  onCreateCategory?: (name: string) => Promise<boolean>;
 }
 
 export const ProductForm = ({
   product,
   onSubmit,
   onCancel,
+  categories = ["health", "pickle", "combo"],
+  onCreateCategory,
 }: ProductFormProps) => {
   const [imagePreview, setImagePreview] = useState<string>(
     product?.image || ""
   );
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -88,6 +102,16 @@ export const ProductForm = ({
     }
     await onSubmit(submitData);
     form.reset();
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim() || !onCreateCategory) return;
+    const success = await onCreateCategory(newCategoryName.trim());
+    if (success) {
+      form.setValue("category", newCategoryName.trim());
+      setNewCategoryName("");
+      setShowCategoryDialog(false);
+    }
   };
 
   return (
@@ -177,7 +201,20 @@ export const ProductForm = ({
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel className="flex items-center justify-between">
+                  Category
+                  {onCreateCategory && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowCategoryDialog(true)}
+                      className="h-6 px-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  )}
+                </FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
@@ -188,9 +225,11 @@ export const ProductForm = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="health">Health</SelectItem>
-                    <SelectItem value="pickle">Pickle</SelectItem>
-                    <SelectItem value="combo">Combo</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -235,6 +274,29 @@ export const ProductForm = ({
           </Button>
         </div>
       </form>
+
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Category</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="Category name"
+            value={newCategoryName}
+            onChange={(e) => setNewCategoryName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreateCategory()}
+          />
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCategoryDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateCategory}>Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Form>
   );
 };

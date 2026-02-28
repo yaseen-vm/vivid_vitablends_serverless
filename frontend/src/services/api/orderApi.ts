@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "@/lib/config";
+import { apiClient } from "@/lib/apiClient";
 
 export interface CreateOrderData {
   customerName: string;
@@ -49,12 +50,8 @@ export const orderApi = {
     return res.json();
   },
 
-  getAll: async (
-    token: string
-  ): Promise<{ success: boolean; data: Order[] }> => {
-    const res = await fetch(`${API_BASE_URL}/api/orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  getAll: async (): Promise<{ success: boolean; data: Order[] }> => {
+    const res = await apiClient(`${API_BASE_URL}/api/orders`);
     if (!res.ok) throw new Error("Failed to fetch orders");
     return res.json();
   },

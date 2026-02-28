@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { productApi } from "@/services/api/productApi";
+import { productApi, categoryApi } from "@/services/api/productApi";
 import { Product } from "@/types/Product";
 import { toast } from "sonner";
 
 export const useAdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await categoryApi.getAll();
+      setCategories(data.map((c) => c.name));
+    } catch (err) {
+      // Fallback to default categories if API fails
+      setCategories(["health", "pickle", "combo"]);
+    }
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -20,8 +31,9 @@ export const useAdminProducts = () => {
   }, []);
 
   useEffect(() => {
+    fetchCategories();
     fetchProducts();
-  }, [fetchProducts]);
+  }, [fetchCategories, fetchProducts]);
 
   const stats = useMemo(() => {
     const byCategory = {
@@ -67,13 +79,27 @@ export const useAdminProducts = () => {
     }
   };
 
+  const createCategory = async (name: string) => {
+    try {
+      await categoryApi.create(name);
+      toast.success("Category created successfully");
+      await fetchCategories();
+      return true;
+    } catch (err) {
+      toast.error("Failed to create category");
+      return false;
+    }
+  };
+
   return {
     products,
+    categories,
     loading,
     stats,
     createProduct,
     updateProduct,
     deleteProduct,
+    createCategory,
     refetch: fetchProducts,
   };
 };

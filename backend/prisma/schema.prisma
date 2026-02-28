@@ -33,6 +33,12 @@ model Session {
   @@index([refreshTokenHash])
 }
 
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
 model Product {
   id            String   @id @default(cuid())
   name          String

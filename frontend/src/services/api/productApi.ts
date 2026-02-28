@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/lib/config";
 import { apiClient } from "@/lib/apiClient";
 import { Product } from "@/types/Product";
+import { Category } from "@/types/Category";
 
 export const productApi = {
   getAll: async (): Promise<Product[]> => {
@@ -55,5 +56,24 @@ export const productApi = {
       method: "DELETE",
     });
     if (!res.ok) throw new Error("Failed to delete product");
+  },
+};
+
+export const categoryApi = {
+  getAll: async (): Promise<Category[]> => {
+    const res = await fetch(`${API_BASE_URL}/api/categories`);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const json = await res.json();
+    return json.data || [];
+  },
+
+  create: async (name: string): Promise<Category> => {
+    const res = await apiClient(`${API_BASE_URL}/api/categories`, {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error("Failed to create category");
+    const json = await res.json();
+    return json.data;
   },
 };
