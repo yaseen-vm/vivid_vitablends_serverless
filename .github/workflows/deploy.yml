@@ -33,6 +33,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:backend-latest
           cache-to: type=inline
+        timeout-minutes: 15
 
       - name: Build frontend image
         uses: docker/build-push-action@v5
@@ -44,6 +45,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:frontend-latest
           cache-to: type=inline
+        timeout-minutes: 15
 
   deploy:
     needs: build-and-push
