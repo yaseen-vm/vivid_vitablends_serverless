@@ -15,19 +15,33 @@ fi
 
 echo "Using: $COMPOSE_CMD"
 
-# Docker Hub login
+# Docker Hub login with retry
 if [ -n "$DOCKER_USERNAME" ] && [ -n "$DOCKER_TOKEN" ]; then
   echo "🔐 Logging into Docker Hub..."
-  echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  LOGIN_SUCCESS=false
+  for i in {1..3}; do
+    if echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin 2>&1; then
+      LOGIN_SUCCESS=true
+      echo "✅ Login successful"
+      break
+    fi
+    echo "⚠️ Login attempt $i failed, retrying..."
+    sleep 5
+  done
+  
+  if [ "$LOGIN_SUCCESS" = false ]; then
+    echo "❌ Docker Hub login failed after 3 attempts"
+    exit 1
+  fi
 fi
 
 # Clean unused images only (safe)
 echo "🧹 Cleaning unused images..."
 docker image prune -af || true
 
-# Pull latest images
+# Pull latest images with timeout
 echo "📦 Pulling latest images..."
-$COMPOSE_CMD -f docker-compose.prod.yml pull
+timeout 300 $COMPOSE_CMD -f docker-compose.prod.yml pull || echo "Pull timeout, using cached images"
 
 # Zero downtime restart
 echo "▶️ Starting containers..."
