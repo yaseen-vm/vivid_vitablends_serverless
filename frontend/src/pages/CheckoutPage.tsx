@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { orderApi } from "@/services/api/orderApi";
+import { WHATSAPP_NUMBER } from "@/lib/config";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ ${itemsText}
 Please confirm availability & delivery time.
 `.trim();
 
-    const whatsappNumber = "919072515306";
+    const whatsappNumber = WHATSAPP_NUMBER;
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
       message
     )}`;

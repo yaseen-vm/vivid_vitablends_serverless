@@ -20,6 +20,7 @@ export interface CreateOrderData {
 export interface Order {
   id: string;
   orderId: string;
+  userId: string;
   customerName: string;
   phone: string;
   address: string;
@@ -37,6 +38,12 @@ export interface Order {
     quantity: number;
     price: number;
   }>;
+  user: {
+    id: string;
+    name: string;
+    phone: string;
+    createdAt: string;
+  };
 }
 
 export const orderApi = {
@@ -53,6 +60,24 @@ export const orderApi = {
   getAll: async (): Promise<{ success: boolean; data: Order[] }> => {
     const res = await apiClient(`${API_BASE_URL}/api/orders`);
     if (!res.ok) throw new Error("Failed to fetch orders");
+    return res.json();
+  },
+
+  updateStatus: async (id: string, status: string) => {
+    const res = await apiClient(`${API_BASE_URL}/api/orders/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error("Failed to update order status");
+    return res.json();
+  },
+
+  getByUserId: async (
+    userId: string
+  ): Promise<{ success: boolean; data: Order[] }> => {
+    const res = await apiClient(`${API_BASE_URL}/api/orders/user/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user orders");
     return res.json();
   },
 };

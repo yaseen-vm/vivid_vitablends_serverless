@@ -19,16 +19,16 @@ model Admin {
 }
 
 model Session {
-  id                String   @id @default(uuid())
-  adminId           String
-  admin             Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  refreshTokenHash  String   @unique
-  expiresAt         DateTime
-  deviceInfo        String?
-  ipAddress         String?
-  revoked           Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  
+  id               String   @id @default(uuid())
+  adminId          String
+  refreshTokenHash String   @unique
+  expiresAt        DateTime
+  deviceInfo       String?
+  ipAddress        String?
+  revoked          Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  admin            Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
   @@index([adminId])
   @@index([refreshTokenHash])
 }
@@ -51,7 +51,7 @@ model Product {
   originalPrice Float?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   @@index([category])
   @@index([featured])
 }
@@ -63,8 +63,18 @@ model Review {
   comment    String
   showInHero Boolean  @default(false)
   createdAt  DateTime @default(now())
-  
+
   @@index([showInHero])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  createdAt DateTime @default(now())
+  orders    Order[]
+
+  @@index([phone])
 }
 
 model Order {
@@ -76,24 +86,27 @@ model Order {
   city         String
   pincode      String
   total        Float
-  status       String      @default("pending")
+  status       String      @default("PENDING")
   whatsappSent Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
   items        OrderItem[]
-  
+
   @@index([orderId])
   @@index([status])
+  @@index([userId])
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
   name      String
   quantity  Int
   price     Float
-  
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   @@index([orderId])
 }

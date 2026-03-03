@@ -27,3 +27,30 @@ export const getAll = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const order = await orderService.updateStatus(id, status);
+    res.json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getByUserId = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const orders = await orderService.getByUserId(userId);
+    res.json({
+      success: true,
+      data: orders,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
