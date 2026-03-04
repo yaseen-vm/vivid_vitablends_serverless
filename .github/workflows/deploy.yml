@@ -12,19 +12,25 @@ jobs:
   security-audit:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
       contents: read
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Backend Security Audit
         run: |
           cd backend
+          npm ci --only=production
           npm audit --audit-level=high
 
       - name: Frontend Security Audit
         run: |
           cd frontend
+          npm ci
           npm audit --audit-level=high
 
   build-and-push:
@@ -46,12 +52,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build backend image
+      - name: Build & Push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          push: false
-          load: true
+          push: true
           tags: |
             ${{ env.IMAGE_NAME }}:backend-latest
             ${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
@@ -60,39 +65,27 @@ jobs:
         timeout-minutes: 15
 
       - name: Scan backend image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:backend-latest
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
-          format: 'sarif'
-          output: 'trivy-backend-results.sarif'
+          image-ref: ${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          format: sarif
+          output: trivy-backend-results.sarif
 
       - name: Upload backend scan results
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('trivy-backend-results.sarif') != ''
         with:
-          sarif_file: 'trivy-backend-results.sarif'
-          category: 'backend-image'
+          sarif_file: trivy-backend-results.sarif
+          category: backend-image
 
-      - name: Push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:backend-latest
-            ${{ env.IMAGE_NAME }}:backend-${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:backend-latest
-          cache-to: type=inline
-        timeout-minutes: 15
 
-      - name: Build frontend image
+      - name: Build & Push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
-          push: false
-          load: true
+          push: true
           tags: |
             ${{ env.IMAGE_NAME }}:frontend-latest
             ${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
@@ -101,32 +94,20 @@ jobs:
         timeout-minutes: 15
 
       - name: Scan frontend image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:frontend-latest
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
-          format: 'sarif'
-          output: 'trivy-frontend-results.sarif'
+          image-ref: ${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          format: sarif
+          output: trivy-frontend-results.sarif
 
       - name: Upload frontend scan results
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('trivy-frontend-results.sarif') != ''
         with:
-          sarif_file: 'trivy-frontend-results.sarif'
-          category: 'frontend-image'
-
-      - name: Push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:frontend-latest
-            ${{ env.IMAGE_NAME }}:frontend-${{ github.sha }}
-          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:frontend-latest
-          cache-to: type=inline
-        timeout-minutes: 15
+          sarif_file: trivy-frontend-results.sarif
+          category: frontend-image
 
   deploy:
     needs: build-and-push
@@ -135,40 +116,22 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-          R2_PUBLIC_BUCKET_ID: ${{ secrets.R2_PUBLIC_BUCKET_ID }}
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
+
           envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD,CORS_ORIGIN,REDIS_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
           script: |
             set -e
-            
-            if [ ! -d "/opt/vivid_vitablends" ]; then
-              sudo mkdir -p /opt/vivid_vitablends
-              sudo chown $USER:$USER /opt/vivid_vitablends
-              cd /opt/vivid_vitablends
-              git clone https://github.com/${{ github.repository }} .
-            else
-              cd /opt/vivid_vitablends
-              git fetch origin
-              git reset --hard origin/main
-            fi
+            cd /opt/vivid_vitablends
 
+            git fetch origin
+            git reset --hard origin/main
+
+
+            install -m 600 /dev/null .env
             cat > .env <<EOF
             DATABASE_URL=${DATABASE_URL}
             DIRECT_URL=${DIRECT_URL}
@@ -188,9 +151,17 @@ jobs:
 
       - name: Health Check
         run: |
-          echo "Waiting for app..."
-          sleep 60
-          curl --retry 5 --retry-delay 10 --fail http://${{ secrets.VM_HOST }}:8000/api/health
+          echo "Waiting for app to be ready..."
+          for i in $(seq 1 12); do
+            if curl --silent --fail http://${{ secrets.VM_HOST }}:8000/api/health; then
+              echo "Health check passed"
+              exit 0
+            fi
+            echo "Attempt $i/12 failed, waiting 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 2 minutes"
+          exit 1
 
   notify:
     runs-on: ubuntu-latest

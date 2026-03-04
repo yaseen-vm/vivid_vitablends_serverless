@@ -74,8 +74,10 @@ services:
       REDIS_TTL: 3600
       NODE_OPTIONS: --max-old-space-size=256
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     mem_limit: 384m
     mem_reservation: 256m
@@ -96,7 +98,7 @@ services:
   frontend:
     image: vividvitablendsdev/vividvitablends:frontend-latest
     expose:
-      - "80"
+      - "8080"
     restart: unless-stopped
     mem_limit: 128m
     mem_reservation: 64m
@@ -111,8 +113,10 @@ services:
   nginx:
     image: nginx:alpine
     depends_on:
-      - backend
-      - frontend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
     ports:
       - "8000:80"
       - "8443:443"
