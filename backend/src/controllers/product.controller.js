@@ -12,7 +12,7 @@ export const getFeatured = async (req, res, next) => {
 export const getAll = async (req, res, next) => {
   try {
     const filters = {
-      category: req.query.category,
+      categoryId: req.query.categoryId,
       featured: req.query.featured,
     };
     const products = await productService.getAll(filters);

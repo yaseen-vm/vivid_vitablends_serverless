@@ -5,14 +5,12 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { orderApi } from "@/services/api/orderApi";
+import { WHATSAPP_NUMBER } from "@/lib/config";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, clearCart } = useCart();
-
-  const buyNowItem = location.state?.buyNowItem;
-  const checkoutItems = buyNowItem ? [buyNowItem] : cart;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,7 +18,12 @@ const CheckoutPage = () => {
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
 
-  // ✅ Use real price from product object
+  const buyNowItem = location.state?.buyNowItem;
+
+  const checkoutItems = useMemo(() => {
+    return buyNowItem ? [buyNowItem] : cart;
+  }, [buyNowItem, cart]);
+
   const total = useMemo(() => {
     return checkoutItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -30,12 +33,20 @@ const CheckoutPage = () => {
 
   const validate = () => {
     if (!name.trim()) return "Please enter your name";
-    if (!phone.trim() || phone.length < 10)
-      return "Please enter a valid phone number";
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length !== 10) {
+      return "Please enter a valid 10-digit phone number";
+    }
+
     if (!address.trim()) return "Please enter your delivery address";
     if (!city.trim()) return "Please enter your city";
-    if (!pincode.trim() || pincode.length < 6)
-      return "Please enter a valid pincode";
+
+    const cleanPincode = pincode.replace(/\D/g, "");
+    if (!cleanPincode || cleanPincode.length !== 6) {
+      return "Please enter a valid 6-digit pincode";
+    }
+
     if (checkoutItems.length === 0) return "No products to checkout";
     return null;
   };
@@ -50,10 +61,10 @@ const CheckoutPage = () => {
     try {
       await orderApi.create({
         customerName: name,
-        phone,
+        phone: phone.replace(/\D/g, ""),
         address,
         city,
-        pincode,
+        pincode: pincode.replace(/\D/g, ""),
         items: checkoutItems.map((item) => ({
           productId: item.id,
           name: item.name,
@@ -91,7 +102,7 @@ ${itemsText}
 Please confirm availability & delivery time.
 `.trim();
 
-    const whatsappNumber = "919072515306";
+    const whatsappNumber = WHATSAPP_NUMBER;
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
       message
     )}`;
@@ -139,6 +150,7 @@ Please confirm availability & delivery time.
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your full name"
                     className="w-full bg-transparent text-sm outline-none"
                   />
                 </div>
@@ -153,6 +165,7 @@ Please confirm availability & delivery time.
                   <input
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Enter your 10-digit mobile number"
                     className="w-full bg-transparent text-sm outline-none"
                   />
                 </div>
@@ -167,6 +180,7 @@ Please confirm availability & delivery time.
                   <textarea
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter your complete delivery address"
                     className="min-h-[90px] w-full resize-none bg-transparent text-sm outline-none"
                   />
                 </div>
@@ -176,14 +190,14 @@ Please confirm availability & delivery time.
                 <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="City"
+                  placeholder="Enter your city"
                   className="rounded-xl border px-3 py-2 text-sm outline-none"
                 />
 
                 <input
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  placeholder="Pincode"
+                  placeholder="Enter 6-digit pincode"
                   className="rounded-xl border px-3 py-2 text-sm outline-none"
                 />
               </div>

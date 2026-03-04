@@ -1,4 +1,5 @@
 import * as orderRepository from '../repositories/order.repository.js';
+import * as userRepository from '../repositories/user.repository.js';
 import logger from '../utils/logger.js';
 
 const validateOrderData = (data) => {
@@ -68,25 +69,52 @@ const validateOrderData = (data) => {
     error.statusCode = 400;
     error.code = 'VALIDATION_ERROR';
     error.errors = errors;
+    logger.warn('Order validation failed', { errors });
     throw error;
   }
 };
 
 const generateOrderId = () => {
-  const date = new Date();
-  const dateStr = date.toISOString().split('T')[0].replace(/-/g, '');
-  const randomStr = Math.random().toString(36).substring(2, 5).toUpperCase();
-  return `ORD-${dateStr}-${randomStr}`;
+  const randomNum = Math.floor(100000 + Math.random() * 900000);
+  return `VV-${randomNum}`;
 };
 
 export const create = async (data) => {
   validateOrderData(data);
 
-  const orderId = generateOrderId();
-  const orderData = { ...data, orderId };
+  let user = await userRepository.findByPhone(data.phone);
+  if (!user) {
+    user = await userRepository.create({
+      name: data.customerName,
+      phone: data.phone,
+    });
+    logger.info('New user created', { userId: user.id, phone: user.phone });
+  }
+
+  let orderId;
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (attempts < maxAttempts) {
+    orderId = generateOrderId();
+    const existing = await orderRepository.findByOrderId(orderId);
+    if (!existing) break;
+    attempts++;
+    logger.warn('Order ID collision, retrying', { orderId, attempt: attempts });
+  }
+
+  if (attempts === maxAttempts) {
+    const error = new Error('Failed to generate unique order ID');
+    error.statusCode = 500;
+    error.code = 'ORDER_ID_GENERATION_FAILED';
+    throw error;
+  }
+
+  const orderData = { ...data, orderId, userId: user.id };
 
   logger.info('Creating order', {
     orderId,
+    userId: user.id,
     total: data.total,
     itemCount: data.items.length,
   });
@@ -95,4 +123,19 @@ export const create = async (data) => {
 
 export const getAll = async () => {
   return await orderRepository.findAll();
+};
+
+export const updateStatus = async (id, status) => {
+  const validStatuses = ['PENDING', 'CONFIRMED', 'CANCELLED', 'DELIVERED'];
+  if (!validStatuses.includes(status)) {
+    const error = new Error('Invalid status');
+    error.statusCode = 400;
+    error.code = 'INVALID_STATUS';
+    throw error;
+  }
+  return await orderRepository.updateStatus(id, status);
+};
+
+export const getByUserId = async (userId) => {
+  return await orderRepository.findByUserId(userId);
 };

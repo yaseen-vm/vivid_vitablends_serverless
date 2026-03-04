@@ -19,40 +19,49 @@ model Admin {
 }
 
 model Session {
-  id                String   @id @default(uuid())
-  adminId           String
-  admin             Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  refreshTokenHash  String   @unique
-  expiresAt         DateTime
-  deviceInfo        String?
-  ipAddress         String?
-  revoked           Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  
+  id               String   @id @default(uuid())
+  adminId          String
+  refreshTokenHash String   @unique
+  expiresAt        DateTime
+  deviceInfo       String?
+  ipAddress        String?
+  revoked          Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  admin            Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
   @@index([adminId])
   @@index([refreshTokenHash])
 }
 
 model Category {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  name         String    @unique
+  description  String?
+  image        String?
+  showOnHome   Boolean   @default(true)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  products     Product[]
+
+  @@index([showOnHome, displayOrder])
 }
 
 model Product {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
   description   String
   price         Float
   image         String
-  category      String
-  featured      Boolean  @default(false)
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  featured      Boolean   @default(false)
   badge         String?
   originalPrice Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  @@index([category])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([categoryId])
   @@index([featured])
 }
 
@@ -63,8 +72,18 @@ model Review {
   comment    String
   showInHero Boolean  @default(false)
   createdAt  DateTime @default(now())
-  
+
   @@index([showInHero])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String   @unique
+  createdAt DateTime @default(now())
+  orders    Order[]
+
+  @@index([phone])
 }
 
 model Order {
@@ -76,24 +95,27 @@ model Order {
   city         String
   pincode      String
   total        Float
-  status       String      @default("pending")
+  status       String      @default("PENDING")
   whatsappSent Boolean     @default(false)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
   items        OrderItem[]
-  
+
   @@index([orderId])
   @@index([status])
+  @@index([userId])
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
   name      String
   quantity  Int
   price     Float
-  
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   @@index([orderId])
 }

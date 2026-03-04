@@ -1,8 +1,7 @@
 import * as productRepository from '../repositories/product.repository.js';
+import * as categoryRepository from '../repositories/category.repository.js';
 import * as imageService from './image.service.js';
 import logger from '../utils/logger.js';
-
-const VALID_CATEGORIES = ['health', 'pickle', 'combo'];
 
 const validateProductData = (data, isUpdate = false) => {
   if (!isUpdate) {
@@ -11,11 +10,11 @@ const validateProductData = (data, isUpdate = false) => {
       !data.description ||
       data.price === undefined ||
       !data.image ||
-      !data.category
+      !data.categoryId
     ) {
       throw Object.assign(
         new Error(
-          'Missing required fields: name, description, price, image, category'
+          'Missing required fields: name, description, price, image, categoryId'
         ),
         {
           statusCode: 400,
@@ -25,16 +24,11 @@ const validateProductData = (data, isUpdate = false) => {
     }
   }
 
-  if (data.category && !VALID_CATEGORIES.includes(data.category)) {
-    throw Object.assign(
-      new Error(
-        `Invalid category. Must be one of: ${VALID_CATEGORIES.join(', ')}`
-      ),
-      {
-        statusCode: 400,
-        code: 'VALIDATION_ERROR',
-      }
-    );
+  if (data.categoryId && typeof data.categoryId !== 'string') {
+    throw Object.assign(new Error('Invalid categoryId format'), {
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+    });
   }
 
   if (
@@ -70,7 +64,9 @@ export const getAll = async (filters) => {
 
 export const getCombos = async () => {
   logger.info('Fetching combo products');
-  return productRepository.findByCategory('combo');
+  const comboCategory = await categoryRepository.findByName('combo');
+  if (!comboCategory) return [];
+  return productRepository.findByCategoryId(comboCategory.id);
 };
 
 export const getById = async (id) => {
@@ -99,6 +95,14 @@ export const getById = async (id) => {
 export const create = async (data) => {
   logger.info('Creating product', { productName: data.name });
   validateProductData(data);
+
+  const categoryExists = await categoryRepository.findById(data.categoryId);
+  if (!categoryExists) {
+    throw Object.assign(new Error('Category not found'), {
+      statusCode: 404,
+      code: 'CATEGORY_NOT_FOUND',
+    });
+  }
 
   if (data.image && data.image.startsWith('data:')) {
     data.image = await imageService.upload(data.image);
@@ -142,6 +146,16 @@ export const update = async (id, data) => {
       statusCode: 404,
       code: 'PRODUCT_NOT_FOUND',
     });
+  }
+
+  if (data.categoryId) {
+    const categoryExists = await categoryRepository.findById(data.categoryId);
+    if (!categoryExists) {
+      throw Object.assign(new Error('Category not found'), {
+        statusCode: 404,
+        code: 'CATEGORY_NOT_FOUND',
+      });
+    }
   }
 
   if (data.image && data.image.startsWith('data:')) {

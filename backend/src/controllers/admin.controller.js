@@ -2,6 +2,7 @@ import { createAdminService } from '../services/admin.service.js';
 import * as adminRepository from '../repositories/admin.repository.js';
 import * as sessionRepository from '../repositories/session.repository.js';
 import config from '../config/index.js';
+import logger from '../utils/logger.js';
 import {
   getDeviceInfo,
   getIpAddress,
@@ -44,6 +45,14 @@ export const refresh = async (req, res, next) => {
   try {
     const refreshToken =
       req.cookies[config.refreshTokenCookieName] || req.body.refreshToken;
+
+    if (!refreshToken) {
+      logger.warn('Token refresh failed - no refresh token provided', {
+        hasCookie: !!req.cookies[config.refreshTokenCookieName],
+        hasBody: !!req.body.refreshToken,
+      });
+    }
+
     const deviceInfo = getDeviceInfo(req);
     const ipAddress = getIpAddress(req);
 

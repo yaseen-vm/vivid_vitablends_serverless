@@ -4,7 +4,8 @@ export type Product = {
   description: string;
   price: number;
   image: string;
-  category: "health" | "pickle" | "combo";
+  categoryId: string;
+  category?: { id: string; name: string };
   featured?: boolean;
   badge?: string;
   originalPrice?: number;

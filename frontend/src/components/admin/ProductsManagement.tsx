@@ -74,7 +74,7 @@ export const ProductsManagement = () => {
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      if (categoryFilter !== "all" && p.category !== categoryFilter)
+      if (categoryFilter !== "all" && p.categoryId !== categoryFilter)
         return false;
       if (featuredFilter === "featured" && !p.featured) return false;
       if (featuredFilter === "not-featured" && p.featured) return false;
@@ -92,7 +92,7 @@ export const ProductsManagement = () => {
     handlePageChange,
   } = useTableFilters({
     data: filteredProducts,
-    searchFields: ["name", "category"],
+    searchFields: ["name"],
     pageSize: 10,
   });
 
@@ -165,8 +165,8 @@ export const ProductsManagement = () => {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -221,7 +221,10 @@ export const ProductsManagement = () => {
                           {product.name}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
+                          <Badge variant="outline">
+                            {categories.find((c) => c.id === product.categoryId)
+                              ?.name || "Unknown"}
+                          </Badge>
                         </TableCell>
                         <TableCell>${product.price.toFixed(2)}</TableCell>
                         <TableCell>

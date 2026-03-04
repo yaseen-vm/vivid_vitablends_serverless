@@ -4,27 +4,33 @@ import { clearCache } from '../middleware/cache.js';
 export const findFeatured = async () => {
   return prisma.product.findMany({
     where: { featured: true },
+    include: { category: true },
   });
 };
 
 export const findAll = async (filters = {}) => {
   const where = {};
-  if (filters.category) where.category = filters.category;
+  if (filters.categoryId) where.categoryId = filters.categoryId;
   if (filters.featured !== undefined)
     where.featured = filters.featured === 'true';
 
-  return prisma.product.findMany({ where });
+  return prisma.product.findMany({
+    where,
+    include: { category: true },
+  });
 };
 
-export const findByCategory = async (category) => {
+export const findByCategoryId = async (categoryId) => {
   return prisma.product.findMany({
-    where: { category },
+    where: { categoryId },
+    include: { category: true },
   });
 };
 
 export const findById = async (id) => {
   return prisma.product.findUnique({
     where: { id },
+    include: { category: true },
   });
 };
 

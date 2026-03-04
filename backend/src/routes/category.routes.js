@@ -7,5 +7,12 @@ const router = express.Router();
 
 router.post('/', authenticate, categoryController.create);
 router.get('/', cache(600), categoryController.getAll);
+router.get('/homepage', cache(600), categoryController.getHomepageCategories);
+router.put(
+  '/:id/homepage',
+  authenticate,
+  categoryController.updateHomepageVisibility
+);
+router.put('/:id', authenticate, categoryController.update);
 
 export default router;

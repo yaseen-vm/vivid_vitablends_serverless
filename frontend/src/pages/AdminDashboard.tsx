@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Package, Star, ShoppingCart, LogOut } from "lucide-react";
+import { Package, Star, ShoppingCart, LogOut, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,10 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductsManagement } from "@/components/admin/ProductsManagement";
 import { ReviewsManagement } from "@/components/admin/ReviewsManagement";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
+import CategoryManagement from "@/components/admin/CategoryManagement";
 import { useAdminProducts } from "@/hooks/useAdminProducts";
 import { useAdminReviews } from "@/hooks/useAdminReviews";
 import { useAdminOrders } from "@/hooks/useAdminOrders";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCategories } from "@/hooks/useCategories";
 import { authStorage } from "@/lib/storage";
 
 const AdminDashboard = () => {
@@ -29,6 +31,7 @@ const AdminDashboard = () => {
   } = useAdminProducts();
   const { stats: reviewStats, loading: reviewsLoading } = useAdminReviews();
   const { orders, loading: ordersLoading } = useAdminOrders();
+  const { categories, loading: categoriesLoading } = useCategories();
 
   useEffect(() => {
     if (!authStorage.getAuth()) {
@@ -49,7 +52,7 @@ const AdminDashboard = () => {
               Admin Dashboard
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Manage your products and reviews
+              Manage your products, categories, and reviews
             </p>
           </div>
           <Button
@@ -63,15 +66,36 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="shadow-[var(--card-shadow)] hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Categories
+                  </CardTitle>
+                  <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-[hsl(var(--primary))]">
+                    {categoriesLoading ? "..." : categories.length}
+                  </div>
+                  {!categoriesLoading && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {categories.filter((c) => c.showOnHome).length} on
+                      homepage
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
               <Card className="shadow-[var(--card-shadow)] hover:shadow-lg transition-shadow">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -127,51 +151,10 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
 
-            {!productsLoading && productStats.total > 0 && (
-              <Card className="shadow-[var(--card-shadow)]">
-                <CardHeader>
-                  <CardTitle>Products by Category</CardTitle>
-                  <CardDescription>
-                    Distribution of products across categories
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Health Powders
-                        </p>
-                        <p className="text-2xl font-bold">
-                          {productStats.byCategory.health}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Premium Pickles
-                        </p>
-                        <p className="text-2xl font-bold">
-                          {productStats.byCategory.pickle}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Combo Offers
-                        </p>
-                        <p className="text-2xl font-bold">
-                          {productStats.byCategory.combo}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+          <TabsContent value="categories">
+            <CategoryManagement />
           </TabsContent>
 
           <TabsContent value="products">

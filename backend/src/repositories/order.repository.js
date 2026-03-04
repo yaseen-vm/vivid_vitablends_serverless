@@ -4,6 +4,7 @@ export const create = async (data) => {
   return prisma.order.create({
     data: {
       orderId: data.orderId,
+      userId: data.userId,
       customerName: data.customerName,
       phone: data.phone,
       address: data.address,
@@ -22,6 +23,7 @@ export const create = async (data) => {
     },
     include: {
       items: true,
+      user: true,
     },
   });
 };
@@ -30,9 +32,39 @@ export const findAll = async () => {
   return prisma.order.findMany({
     include: {
       items: true,
+      user: true,
     },
     orderBy: {
       createdAt: 'desc',
     },
+  });
+};
+
+export const updateStatus = async (id, status) => {
+  return prisma.order.update({
+    where: { id },
+    data: { status },
+    include: {
+      items: true,
+      user: true,
+    },
+  });
+};
+
+export const findByUserId = async (userId) => {
+  return prisma.order.findMany({
+    where: { userId },
+    include: {
+      items: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+export const findByOrderId = async (orderId) => {
+  return prisma.order.findUnique({
+    where: { orderId },
   });
 };

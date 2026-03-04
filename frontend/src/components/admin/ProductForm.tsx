@@ -36,7 +36,7 @@ const productSchema = z.object({
   description: z.string().min(1, "Description is required"),
   price: z.coerce.number().positive("Price must be positive"),
   image: z.string().min(1, "Image is required"),
-  category: z.enum(["health", "pickle", "combo"]),
+  categoryId: z.string().min(1, "Category is required"),
   featured: z.boolean().optional(),
   badge: z.string().optional(),
   originalPrice: z.coerce.number().nonnegative().optional(),
@@ -48,7 +48,7 @@ interface ProductFormProps {
   product?: Product;
   onSubmit: (data: ProductFormData) => Promise<void>;
   onCancel: () => void;
-  categories?: string[];
+  categories?: Array<{ id: string; name: string }>;
   onCreateCategory?: (name: string) => Promise<boolean>;
 }
 
@@ -56,7 +56,7 @@ export const ProductForm = ({
   product,
   onSubmit,
   onCancel,
-  categories = ["health", "pickle", "combo"],
+  categories = [],
   onCreateCategory,
 }: ProductFormProps) => {
   const [imagePreview, setImagePreview] = useState<string>(
@@ -72,7 +72,7 @@ export const ProductForm = ({
       description: product?.description || "",
       price: product?.price || 0,
       image: product?.image || "",
-      category: product?.category || "health",
+      categoryId: product?.categoryId || "",
       featured: product?.featured || false,
       badge: product?.badge || "",
       originalPrice: product?.originalPrice || 0,
@@ -108,7 +108,6 @@ export const ProductForm = ({
     if (!newCategoryName.trim() || !onCreateCategory) return;
     const success = await onCreateCategory(newCategoryName.trim());
     if (success) {
-      form.setValue("category", newCategoryName.trim());
       setNewCategoryName("");
       setShowCategoryDialog(false);
     }
@@ -198,7 +197,7 @@ export const ProductForm = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <FormField
             control={form.control}
-            name="category"
+            name="categoryId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center justify-between">
@@ -221,13 +220,13 @@ export const ProductForm = ({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

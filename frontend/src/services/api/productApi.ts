@@ -4,8 +4,11 @@ import { Product } from "@/types/Product";
 import { Category } from "@/types/Category";
 
 export const productApi = {
-  getAll: async (): Promise<Product[]> => {
-    const res = await fetch(`${API_BASE_URL}/api/products`);
+  getAll: async (categoryId?: string): Promise<Product[]> => {
+    const url = categoryId
+      ? `${API_BASE_URL}/api/products?categoryId=${categoryId}`
+      : `${API_BASE_URL}/api/products`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch products");
     const json = await res.json();
     return json.data || json;
@@ -21,6 +24,15 @@ export const productApi = {
   getCombos: async (): Promise<Product[]> => {
     const res = await fetch(`${API_BASE_URL}/api/products/combos`);
     if (!res.ok) throw new Error("Failed to fetch combos");
+    const json = await res.json();
+    return json.data || json;
+  },
+
+  getByCategory: async (categoryId: string): Promise<Product[]> => {
+    const res = await fetch(
+      `${API_BASE_URL}/api/products?categoryId=${categoryId}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch products by category");
     const json = await res.json();
     return json.data || json;
   },
@@ -67,12 +79,46 @@ export const categoryApi = {
     return json.data || [];
   },
 
+  getHomepageCategories: async (): Promise<Category[]> => {
+    const res = await fetch(`${API_BASE_URL}/api/categories/homepage`);
+    if (!res.ok) throw new Error("Failed to fetch homepage categories");
+    const json = await res.json();
+    return json.data || [];
+  },
+
   create: async (name: string): Promise<Category> => {
     const res = await apiClient(`${API_BASE_URL}/api/categories`, {
       method: "POST",
       body: JSON.stringify({ name }),
     });
     if (!res.ok) throw new Error("Failed to create category");
+    const json = await res.json();
+    return json.data;
+  },
+
+  updateHomepageVisibility: async (
+    id: string,
+    showOnHome: boolean,
+    displayOrder?: number
+  ): Promise<Category> => {
+    const res = await apiClient(
+      `${API_BASE_URL}/api/categories/${id}/homepage`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ showOnHome, displayOrder }),
+      }
+    );
+    if (!res.ok) throw new Error("Failed to update category");
+    const json = await res.json();
+    return json.data;
+  },
+
+  update: async (id: string, data: Partial<Category>): Promise<Category> => {
+    const res = await apiClient(`${API_BASE_URL}/api/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update category");
     const json = await res.json();
     return json.data;
   },

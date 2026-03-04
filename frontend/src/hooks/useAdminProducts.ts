@@ -5,16 +5,17 @@ import { toast } from "sonner";
 
 export const useAdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [loading, setLoading] = useState(true);
 
   const fetchCategories = useCallback(async () => {
     try {
       const data = await categoryApi.getAll();
-      setCategories(data.map((c) => c.name));
+      setCategories(data);
     } catch (err) {
-      // Fallback to default categories if API fails
-      setCategories(["health", "pickle", "combo"]);
+      toast.error("Failed to load categories");
     }
   }, []);
 
@@ -36,15 +37,16 @@ export const useAdminProducts = () => {
   }, [fetchCategories, fetchProducts]);
 
   const stats = useMemo(() => {
-    const byCategory = {
-      health: products.filter((p) => p.category === "health").length,
-      pickle: products.filter((p) => p.category === "pickle").length,
-      combo: products.filter((p) => p.category === "combo").length,
-    };
+    const byCategory: Record<string, number> = {};
+    categories.forEach((cat) => {
+      byCategory[cat.name] = products.filter(
+        (p) => p.categoryId === cat.id
+      ).length;
+    });
     const featuredCount = products.filter((p) => p.featured).length;
 
     return { byCategory, featuredCount, total: products.length };
-  }, [products]);
+  }, [products, categories]);
 
   const createProduct = async (product: Omit<Product, "id">) => {
     try {

@@ -14,4 +14,18 @@ router.post(
 
 router.get('/', authenticate, requireAdmin, orderController.getAll);
 
+router.patch(
+  '/:id/status',
+  authenticate,
+  requireAdmin,
+  orderController.updateStatus
+);
+
+router.get(
+  '/user/:userId',
+  authenticate,
+  requireAdmin,
+  orderController.getByUserId
+);
+
 export default router;

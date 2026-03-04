@@ -1,37 +1,78 @@
 import { Home, ShoppingCart, Search } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
+import { categoryApi } from "@/services/api/productApi";
 import { Product } from "@/types/Product";
-import { useState, useMemo } from "react";
-
-const categories = [
-  { label: "All", value: "all" },
-  { label: "Powders", value: "health" },
-  { label: "Pickles", value: "pickle" },
-  { label: "Combos", value: "combo" },
-];
+import { Category } from "@/types/Category";
+import { useState, useMemo, useEffect } from "react";
 
 const ProductsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { cartCount, addToCart } = useCart();
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { products: filteredProducts } = useProducts(activeCategory);
   const { products: allProducts } = useProducts();
 
-  const baseProducts =
-    activeCategory === "all" ? allProducts : filteredProducts;
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await categoryApi.getAll();
+        // Only show categories with showOnHome: true
+        setCategories(data.filter((cat) => cat.showOnHome));
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
-  // 🔎 Search Filtering
+  // Set active category from URL params
+  useEffect(() => {
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      // Check if it's a category name (slug) or ID
+      const matchedCategory = categories.find(
+        (cat) =>
+          cat.name.toLowerCase() === categoryParam.toLowerCase() ||
+          cat.id === categoryParam
+      );
+      setActiveCategory(matchedCategory ? matchedCategory.id : categoryParam);
+    }
+  }, [searchParams, categories]);
+
+  // Filter products by category and search
   const products = useMemo(() => {
-    return baseProducts.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [baseProducts, searchTerm]);
+    let filtered = allProducts;
+
+    // Filter by category
+    if (activeCategory !== "all") {
+      filtered = filtered.filter(
+        (product) => product.categoryId === activeCategory
+      );
+    } else {
+      // When "All" is selected, only show products from visible categories
+      const visibleCategoryIds = categories.map((cat) => cat.id);
+      filtered = filtered.filter((product) =>
+        visibleCategoryIds.includes(product.categoryId)
+      );
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter((product) =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [allProducts, activeCategory, searchTerm, categories]);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);
@@ -49,29 +90,53 @@ const ProductsPage = () => {
     });
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    const newParams = new URLSearchParams(searchParams);
+    if (categoryId === "all") {
+      newParams.delete("category");
+    } else {
+      // Use category name for URL
+      const category = categories.find((cat) => cat.id === categoryId);
+      newParams.set(
+        "category",
+        category ? encodeURIComponent(category.name.toLowerCase()) : categoryId
+      );
+    }
+    navigate(`/products?${newParams.toString()}`, { replace: true });
+  };
+
+  // Create category options for tabs
+  const categoryOptions = [
+    { label: "All", value: "all" },
+    ...categories.map((cat) => ({ label: cat.name, value: cat.id })),
+  ];
+
   return (
     <main className="min-h-screen bg-secondary">
       {/* ================= TOP BAR ================= */}
-      <div className="sticky top-0 z-50 bg-zinc-400 px-5 py-4 shadow-md md:px-10">
+      <div className="sticky top-0 z-50 bg-gradient-to-r from-warm-gold to-amber-600 px-4 py-3 shadow-lg md:px-10">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <button
             onClick={() => navigate("/")}
-            className="rounded-lg p-2 text-black hover:bg-white/20"
+            className="rounded-lg p-2 text-white hover:bg-white/20 transition-colors"
+            aria-label="Go to home"
           >
-            <Home size={22} />
+            <Home size={20} />
           </button>
 
-          <h1 className="font-display text-xl font-bold tracking-wide text-black">
+          <h1 className="font-display text-base font-bold tracking-wide text-white md:text-xl">
             Our Products
           </h1>
 
           <button
             onClick={() => navigate("/cart")}
-            className="relative rounded-lg p-2 text-black hover:bg-white/20"
+            className="relative rounded-lg p-2 text-white hover:bg-white/20 transition-colors"
+            aria-label="View cart"
           >
-            <ShoppingCart size={22} />
+            <ShoppingCart size={20} />
             {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-accent-foreground">
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-md">
                 {cartCount}
               </span>
             )}
@@ -80,46 +145,46 @@ const ProductsPage = () => {
       </div>
 
       {/* ================= SEARCH BAR ================= */}
-      <div className="bg-secondary px-5 pt-6 md:px-10">
+      <div className="bg-gradient-to-b from-secondary to-background px-4 pt-4 pb-6 md:px-10">
         <div className="mx-auto max-w-7xl">
-          <div className="relative max-w-md">
+          <div className="relative">
             <Search
               size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
             <input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-full border border-border bg-card py-2 pl-10 pr-4 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20"
+              className="w-full rounded-xl border-2 border-border bg-card py-3 pl-11 pr-4 text-sm shadow-sm outline-none transition focus:border-warm-gold focus:ring-2 focus:ring-warm-gold/20"
             />
           </div>
         </div>
       </div>
 
       {/* ================= PAGE CONTENT ================= */}
-      <div className="px-5 py-10 md:px-10">
+      <div className="px-4 py-6 md:px-10 md:py-10">
         <div className="mx-auto max-w-7xl">
           {/* ================= PAGE TAGLINE ================= */}
-          <div className="mb-10 text-center">
-            <p className="text-sm md:text-2xl font-semibold text-foreground">
+          <div className="mb-6 text-center md:mb-10">
+            <p className="text-xs leading-relaxed text-muted-foreground md:text-xl md:font-semibold md:text-foreground">
               Pure ingredients, traditional recipes, and wholesome goodness in
               every product.
             </p>
           </div>
 
           {/* ================= TAB BAR ================= */}
-          <div className="mb-14 flex justify-center">
-            <div className="flex rounded-full bg-card p-1 shadow-sm">
-              {categories.map((cat) => (
+          <div className="mb-8 flex justify-center md:mb-14">
+            <div className="flex flex-wrap justify-center gap-2 rounded-2xl bg-card p-2 shadow-md">
+              {categoryOptions.map((cat) => (
                 <button
                   key={cat.value}
-                  onClick={() => setActiveCategory(cat.value)}
-                  className={`rounded-full px-4 py-0 text-sm font-sans transition-all ${
+                  onClick={() => handleCategoryChange(cat.value)}
+                  className={`rounded-xl px-3 py-2 text-xs font-medium transition-all capitalize md:px-4 md:text-sm ${
                     activeCategory === cat.value
-                      ? "bg-accent text-accent-foreground shadow"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-warm-gold text-white shadow-md scale-105"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {cat.label}
@@ -130,47 +195,60 @@ const ProductsPage = () => {
 
           {/* ================= PRODUCT GRID ================= */}
           {products.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              No products found.
-            </p>
+            <div className="text-center py-12">
+              <p className="text-sm text-muted-foreground mb-4">
+                {searchTerm
+                  ? `No products found for "${searchTerm}"`
+                  : "No products found in this category."}
+              </p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="text-warm-gold hover:underline font-medium"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="rounded-2xl bg-card p-5 shadow-sm transition hover:shadow-md"
+                  className="group rounded-xl bg-card p-3 shadow-sm transition-all hover:shadow-lg md:rounded-2xl md:p-5"
                 >
-                  <div className="mb-4 flex h-56 items-center justify-center overflow-hidden rounded-xl bg-muted p-3">
+                  <div className="mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-muted p-2 md:mb-4 md:rounded-xl md:p-3">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-contain transition-transform group-hover:scale-105"
+                      loading="lazy"
                     />
                   </div>
 
-                  <h3 className="mb-2 text-sm font-semibold text-foreground">
+                  <h3 className="mb-1 text-xs font-semibold text-foreground line-clamp-2 md:mb-2 md:text-sm">
                     {product.name}
                   </h3>
 
-                  <p className="mb-4 text-xs text-muted-foreground">
+                  <p className="mb-2 text-[10px] text-muted-foreground line-clamp-2 md:mb-4 md:text-xs">
                     {product.description}
                   </p>
 
-                  <p className="mb-4 text-sm font-bold text-green-600">
+                  <p className="mb-3 text-sm font-bold text-green-600 md:mb-4 md:text-base">
                     ₹{product.price}
                   </p>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 md:flex-row">
                     <button
                       onClick={() => handleBuyNow(product)}
-                      className="flex-1 rounded-md border border-earthy-brown px-3 py-2 text-xs font-semibold text-black hover:bg-earthy-brown/10"
+                      className="flex-1 rounded-lg bg-warm-gold px-3 py-2 text-[10px] font-semibold text-white transition-all hover:bg-amber-600 active:scale-95 md:text-xs"
                     >
                       Buy Now
                     </button>
 
                     <button
                       onClick={() => handleAddToCart(product)}
-                      className="flex-1 rounded-md border border-earthy-brown px-3 py-2 text-xs font-semibold text-black hover:bg-earthy-brown/10"
+                      className="flex-1 rounded-lg border-2 border-warm-gold px-3 py-2 text-[10px] font-semibold text-warm-gold transition-all hover:bg-warm-gold hover:text-white active:scale-95 md:text-xs"
                     >
                       Add to Cart
                     </button>
