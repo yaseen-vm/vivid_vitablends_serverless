@@ -1,44 +1,35 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { categoryApi } from "@/services/api/productApi";
 import { Category } from "@/types/Category";
 import { EXCLUDED_CATEGORY_NAMES } from "@/lib/constants";
 
 export const useCategories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const data = await categoryApi.getAll();
-        setCategories(data);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to fetch categories")
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+  const {
+    data: categories = [],
+    isLoading: loading,
+    error,
+  } = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: categoryApi.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   const displayCategories = useMemo(
     () =>
-      categories.filter(
-        (cat) => !EXCLUDED_CATEGORY_NAMES.includes(cat.name.toLowerCase())
-      ),
+      categories
+        .filter(
+          (cat) =>
+            cat.showOnHome &&
+            !EXCLUDED_CATEGORY_NAMES.includes(cat.name.toLowerCase())
+        )
+        .sort((a, b) => a.displayOrder - b.displayOrder),
     [categories]
   );
 
   const getHomepageCategories = useMemo(
-    () =>
-      categories
-        .filter((cat) => cat.showOnHome)
-        .sort((a, b) => a.displayOrder - b.displayOrder),
-    [categories]
+    () => displayCategories,
+    [displayCategories]
   );
 
   return {
@@ -46,6 +37,6 @@ export const useCategories = () => {
     displayCategories,
     getHomepageCategories,
     loading,
-    error,
+    error: error as Error | null,
   };
 };

@@ -13,5 +13,6 @@ router.put(
   authenticate,
   categoryController.updateHomepageVisibility
 );
+router.put('/:id', authenticate, categoryController.update);
 
 export default router;

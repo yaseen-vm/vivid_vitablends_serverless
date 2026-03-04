@@ -112,4 +112,14 @@ export const categoryApi = {
     const json = await res.json();
     return json.data;
   },
+
+  update: async (id: string, data: Partial<Category>): Promise<Category> => {
+    const res = await apiClient(`${API_BASE_URL}/api/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update category");
+    const json = await res.json();
+    return json.data;
+  },
 };

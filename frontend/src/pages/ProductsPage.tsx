@@ -24,7 +24,8 @@ const ProductsPage = () => {
     const fetchCategories = async () => {
       try {
         const data = await categoryApi.getAll();
-        setCategories(data);
+        // Only show categories with showOnHome: true
+        setCategories(data.filter((cat) => cat.showOnHome));
       } catch (error) {
         console.error("Failed to fetch categories:", error);
       }
@@ -55,6 +56,12 @@ const ProductsPage = () => {
       filtered = filtered.filter(
         (product) => product.categoryId === activeCategory
       );
+    } else {
+      // When "All" is selected, only show products from visible categories
+      const visibleCategoryIds = categories.map((cat) => cat.id);
+      filtered = filtered.filter((product) =>
+        visibleCategoryIds.includes(product.categoryId)
+      );
     }
 
     // Filter by search term
@@ -65,7 +72,7 @@ const ProductsPage = () => {
     }
 
     return filtered;
-  }, [allProducts, activeCategory, searchTerm]);
+  }, [allProducts, activeCategory, searchTerm, categories]);
 
   const handleAddToCart = (product: Product) => {
     addToCart(product);

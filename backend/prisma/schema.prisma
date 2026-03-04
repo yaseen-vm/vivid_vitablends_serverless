@@ -36,9 +36,12 @@ model Session {
 model Category {
   id           String    @id @default(cuid())
   name         String    @unique
+  description  String?
+  image        String?
   showOnHome   Boolean   @default(true)
   displayOrder Int       @default(0)
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
   products     Product[]
 
   @@index([showOnHome, displayOrder])

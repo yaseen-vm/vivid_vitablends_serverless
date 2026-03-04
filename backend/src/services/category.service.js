@@ -55,3 +55,27 @@ export const updateHomepageVisibility = async (
   });
   return updatedCategory;
 };
+
+export const update = async (id, data) => {
+  const category = await categoryRepository.findById(id);
+  if (!category) {
+    throw Object.assign(new Error('Category not found'), {
+      statusCode: 404,
+      code: 'CATEGORY_NOT_FOUND',
+    });
+  }
+
+  if (data.name && data.name !== category.name) {
+    const existing = await categoryRepository.findByName(data.name.trim());
+    if (existing) {
+      throw Object.assign(new Error('Category name already exists'), {
+        statusCode: 409,
+        code: 'CATEGORY_EXISTS',
+      });
+    }
+  }
+
+  const updatedCategory = await categoryRepository.update(id, data);
+  logger.info('Category updated', { id, data });
+  return updatedCategory;
+};

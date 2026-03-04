@@ -47,3 +47,17 @@ export const updateHomepageVisibility = async (req, res, next) => {
     next(error);
   }
 };
+
+export const update = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const category = await categoryService.update(id, req.body);
+
+    clearCache('categories:all');
+    clearCache('categories:homepage');
+
+    res.status(200).json({ success: true, data: category });
+  } catch (error) {
+    next(error);
+  }
+};
