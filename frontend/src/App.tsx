@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { useMemo } from "react";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
@@ -33,7 +34,14 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/sys-admin-portal" element={<AdminLogin />} />
-              <Route path="/sys-admin-dashboard" element={<AdminDashboard />} />
+              <Route
+                path="/sys-admin-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/health-powders" element={<HealthPowders />} />
               <Route path="/premium-pickles" element={<PremiumPickles />} />
               <Route path="/products" element={<ProductsPage />} />

@@ -1,5 +1,5 @@
 import * as orderRepository from '../repositories/order.repository.js';
-import * as userRepository from '../repositories/user.repository.js';
+import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
 
 const validateOrderData = (data) => {
@@ -82,43 +82,67 @@ const generateOrderId = () => {
 export const create = async (data) => {
   validateOrderData(data);
 
-  let user = await userRepository.findByPhone(data.phone);
-  if (!user) {
-    user = await userRepository.create({
-      name: data.customerName,
-      phone: data.phone,
+  return await prisma.$transaction(async (tx) => {
+    let user = await tx.user.findUnique({ where: { phone: data.phone } });
+
+    if (!user) {
+      user = await tx.user.create({
+        data: {
+          name: data.customerName,
+          phone: data.phone,
+        },
+      });
+      logger.info('New user created', { userId: user.id, phone: user.phone });
+    }
+
+    let orderId;
+    let attempts = 0;
+    const maxAttempts = 5;
+
+    while (attempts < maxAttempts) {
+      orderId = generateOrderId();
+      const existing = await tx.order.findUnique({ where: { orderId } });
+      if (!existing) break;
+      attempts++;
+      logger.warn('Order ID collision, retrying', {
+        orderId,
+        attempt: attempts,
+      });
+    }
+
+    if (attempts === maxAttempts) {
+      const error = new Error('Failed to generate unique order ID');
+      error.statusCode = 500;
+      error.code = 'ORDER_ID_GENERATION_FAILED';
+      throw error;
+    }
+
+    logger.info('Creating order', {
+      orderId,
+      userId: user.id,
+      total: data.total,
+      itemCount: data.items.length,
     });
-    logger.info('New user created', { userId: user.id, phone: user.phone });
-  }
 
-  let orderId;
-  let attempts = 0;
-  const maxAttempts = 5;
-
-  while (attempts < maxAttempts) {
-    orderId = generateOrderId();
-    const existing = await orderRepository.findByOrderId(orderId);
-    if (!existing) break;
-    attempts++;
-    logger.warn('Order ID collision, retrying', { orderId, attempt: attempts });
-  }
-
-  if (attempts === maxAttempts) {
-    const error = new Error('Failed to generate unique order ID');
-    error.statusCode = 500;
-    error.code = 'ORDER_ID_GENERATION_FAILED';
-    throw error;
-  }
-
-  const orderData = { ...data, orderId, userId: user.id };
-
-  logger.info('Creating order', {
-    orderId,
-    userId: user.id,
-    total: data.total,
-    itemCount: data.items.length,
+    return await tx.order.create({
+      data: {
+        orderId,
+        customerName: data.customerName,
+        phone: data.phone,
+        address: data.address,
+        city: data.city,
+        pincode: data.pincode,
+        total: data.total,
+        userId: user.id,
+        items: {
+          create: data.items,
+        },
+      },
+      include: {
+        items: true,
+      },
+    });
   });
-  return await orderRepository.create(orderData);
 };
 
 export const getAll = async () => {

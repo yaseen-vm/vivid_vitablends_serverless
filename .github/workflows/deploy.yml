@@ -9,8 +9,24 @@ env:
   IMAGE_NAME: vividvitablendsdev/vividvitablends
 
 jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Backend Security Audit
+        run: |
+          cd backend
+          npm audit --audit-level=high
+
+      - name: Frontend Security Audit
+        run: |
+          cd frontend
+          npm audit --audit-level=high
+
   build-and-push:
     runs-on: ubuntu-latest
+    needs: security-audit
 
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +50,13 @@ jobs:
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:backend-latest
           cache-to: type=inline
         timeout-minutes: 15
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:backend-latest
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
 
       - name: Build frontend image
         uses: docker/build-push-action@v5
@@ -61,6 +84,8 @@ jobs:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -71,7 +96,7 @@ jobs:
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
-          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
+          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,POSTGRES_PASSWORD,CORS_ORIGIN,REDIS_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
           script: |
             set -e
             
@@ -91,6 +116,8 @@ jobs:
             DIRECT_URL=${DIRECT_URL}
             JWT_SECRET=${JWT_SECRET}
             POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            CORS_ORIGIN=${CORS_ORIGIN}
+            REDIS_PASSWORD=${REDIS_PASSWORD}
             R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
             R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
             R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}

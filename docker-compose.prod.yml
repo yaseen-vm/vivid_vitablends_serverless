@@ -31,13 +31,16 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     restart: unless-stopped
     mem_limit: 128m
     mem_reservation: 64m
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,7 +69,8 @@ services:
       R2_BUCKET_NAME: ${R2_BUCKET_NAME}
       R2_PUBLIC_BUCKET_ID: ${R2_PUBLIC_BUCKET_ID}
       REDIS_ENABLED: true
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDIS_TTL: 3600
       NODE_OPTIONS: --max-old-space-size=256
     depends_on:

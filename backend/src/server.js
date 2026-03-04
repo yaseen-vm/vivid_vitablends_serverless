@@ -1,6 +1,7 @@
 import './loadEnv.js';
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import config from './config/index.js';
 import logger from './utils/logger.js';
@@ -20,11 +21,40 @@ initRedis().catch((err) => {
   logger.error('Redis initialization failed, continuing without cache', err);
 });
 
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https://pub-*.r2.dev'],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
+
+initRedis().catch((err) => {
+  logger.error('Redis initialization failed, continuing without cache', err);
+});
+
 app.set('etag', false);
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim());
+
+      // Block wildcard in production
+      if (allowedOrigins.includes('*') && config.nodeEnv === 'production') {
+        logger.error('CORS wildcard not allowed in production');
+        return callback(new Error('Invalid CORS configuration'));
+      }
+
       if (
         !origin ||
         allowedOrigins.includes('*') ||
@@ -53,11 +83,22 @@ app.use('/api/categories', categoryRoutes);
 app.use('/', healthRoutes);
 
 app.use((err, req, res, next) => {
-  logger.error('Request failed', { error: err.message, path: req.path });
+  logger.error('Request failed', {
+    error: err.message,
+    stack: err.stack,
+    path: req.path,
+  });
+
+  const message =
+    config.nodeEnv === 'production' && !err.statusCode
+      ? 'An error occurred'
+      : err.message;
+
   res.status(err.statusCode || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message,
     code: err.code || 'INTERNAL_ERROR',
+    ...(err.errors && { errors: err.errors }),
   });
 });
 

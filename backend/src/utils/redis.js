@@ -7,7 +7,12 @@ let redisClient = null;
 export const initRedis = async () => {
   if (config.redisEnabled) {
     try {
-      redisClient = createClient({ url: config.redisUrl });
+      const clientConfig = { url: config.redisUrl };
+      if (config.redisPassword) {
+        clientConfig.password = config.redisPassword;
+      }
+
+      redisClient = createClient(clientConfig);
       redisClient.on('error', (err) => logger.error('Redis Client Error', err));
       redisClient.on('connect', () => logger.info('Redis Client Connected'));
       await redisClient.connect();
