@@ -3,7 +3,7 @@ import config from '../config/index.js';
 import logger from './logger.js';
 
 export const getCached = async (key) => {
-  if (!config.redisEnabled || !redisClient) return null;
+  if (!config.redisEnabled || redisClient == null) return null;
 
   try {
     const cached = await redisClient.get(key);
@@ -15,7 +15,7 @@ export const getCached = async (key) => {
 };
 
 export const setCached = async (key, value, ttl = config.redisTtl) => {
-  if (!config.redisEnabled || !redisClient) return;
+  if (!config.redisEnabled || redisClient == null) return;
 
   try {
     await redisClient.setEx(key, ttl, JSON.stringify(value));
@@ -25,7 +25,7 @@ export const setCached = async (key, value, ttl = config.redisTtl) => {
 };
 
 export const deleteCached = async (key) => {
-  if (!config.redisEnabled || !redisClient) return;
+  if (!config.redisEnabled || redisClient == null) return;
 
   try {
     await redisClient.del(key);
@@ -35,7 +35,7 @@ export const deleteCached = async (key) => {
 };
 
 export const clearPattern = async (pattern) => {
-  if (!config.redisEnabled || !redisClient) return;
+  if (!config.redisEnabled || redisClient == null) return;
 
   try {
     const keys = await redisClient.keys(pattern);
