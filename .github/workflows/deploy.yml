@@ -139,7 +139,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
 
-          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,JWT_REFRESH_SECRET,POSTGRES_PASSWORD,CORS_ORIGIN,REDIS_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
+          envs: DOCKER_USERNAME,DOCKER_TOKEN,DATABASE_URL,DIRECT_URL,JWT_SECRET,JWT_EXPIRES_IN,JWT_REFRESH_SECRET,JWT_REFRESH_EXPIRES_IN,POSTGRES_PASSWORD,CORS_ORIGIN,REDIS_PASSWORD,R2_ACCOUNT_ID,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_PUBLIC_BUCKET_ID
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
@@ -194,6 +194,11 @@ jobs:
       - name: Health Check
         run: |
           echo "Waiting for app to be ready..."
+          echo "Checking containers status first..."
+          
+          # Check if containers are running
+          ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.VM_SSH_KEY }}") ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} -p ${{ secrets.VM_PORT }} 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+          
           for i in $(seq 1 12); do
             if curl --silent --fail http://${{ secrets.VM_HOST }}:8000/api/health; then
               echo "Health check passed"
@@ -203,6 +208,11 @@ jobs:
             sleep 10
           done
           echo "Health check failed after 2 minutes"
+          
+          # Show container logs for debugging
+          echo "Backend logs:"
+          ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.VM_SSH_KEY }}") ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} -p ${{ secrets.VM_PORT }} 'docker logs --tail 20 vivid_vitablends-backend-1'
+          
           exit 1
 
   notify:
