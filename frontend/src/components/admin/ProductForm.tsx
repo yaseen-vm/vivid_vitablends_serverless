@@ -40,6 +40,7 @@ const productSchema = z.object({
   featured: z.boolean().optional(),
   badge: z.string().optional(),
   originalPrice: z.coerce.number().nonnegative().optional(),
+  inStock: z.boolean().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -76,6 +77,7 @@ export const ProductForm = ({
       featured: product?.featured || false,
       badge: product?.badge || "",
       originalPrice: product?.originalPrice || 0,
+      inStock: product?.inStock ?? true,
     },
   });
 
@@ -249,21 +251,38 @@ export const ProductForm = ({
             )}
           />
         </div>
-        <FormField
-          control={form.control}
-          name="featured"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2 pt-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="!mt-0">Featured Product</FormLabel>
-            </FormItem>
-          )}
-        />
+        <div className="flex gap-6">
+          <FormField
+            control={form.control}
+            name="featured"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2 pt-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="!mt-0">Featured Product</FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="inStock"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2 pt-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="!mt-0">In Stock</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="flex justify-end gap-2 pt-2">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel

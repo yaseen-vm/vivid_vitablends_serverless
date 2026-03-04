@@ -33,10 +33,13 @@ export const reviewApi = {
     id: string,
     showInHero: boolean
   ): Promise<Review> => {
-    const res = await apiClient(`${API_BASE_URL}/api/reviews/${id}/show-in-hero`, {
-      method: "PATCH",
-      body: JSON.stringify({ showInHero }),
-    });
+    const res = await apiClient(
+      `${API_BASE_URL}/api/reviews/${id}/show-in-hero`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ showInHero }),
+      }
+    );
     if (!res.ok) throw new Error("Failed to update review");
     const json = await res.json();
     return json.data || json;

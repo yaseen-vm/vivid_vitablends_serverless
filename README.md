@@ -5,33 +5,55 @@ A full-stack web application built with React, TypeScript, and Node.js.
 ## Tech Stack
 
 ### Frontend
-- React 18 with TypeScript
-- Vite for build tooling
-- Tailwind CSS for styling
-- shadcn/ui component library
-- React Router for navigation
-- TanStack Query for data fetching
-- React Hook Form with Zod validation
-- Vitest for testing
+- **React 18.3.1** with **TypeScript 5.8.3**
+- **Vite 5.4.19** - Build tooling with SWC plugin
+- **Tailwind CSS 3.4.17** - Styling with Autoprefixer & PostCSS
+- **shadcn/ui** - Component library (Radix UI primitives)
+- **React Router 6.30.1** - Navigation
+- **TanStack Query 5.83.0** - Data fetching & caching
+- **React Hook Form 7.61.1** with **Zod 3.25.76** - Form validation
+- **Vitest 3.2.4** - Testing framework
+- **Lucide React** - Icons
+- **Sonner** - Toast notifications
+- **date-fns** - Date utilities
+- **Recharts** - Charts
+- **Embla Carousel** - Carousel component
+- **next-themes** - Theme management
+- **ESLint 9.32.0** & **Prettier 3.2.5** - Code quality
+- **Husky** & **lint-staged** - Git hooks
 
 ### Backend
-- Node.js with Express
-- Prisma ORM
-- PostgreSQL database
-- Winston for logging
-- CORS enabled
+- **Node.js** with **Express 4.18.2**
+- **Prisma ORM 5.8.0** - Database ORM
+- **PostgreSQL 16** (Alpine) - Database
+- **Redis 7** (Alpine) - Caching layer
+- **Winston 3.11.0** - Logging
+- **CORS 2.8.5** - Cross-origin resource sharing
+- **bcryptjs** - Password hashing
+- **jsonwebtoken** - JWT authentication
+- **cookie-parser** - Cookie handling
+- **AWS SDK S3** - Cloudflare R2 storage integration
+- **Sharp 0.34.5** - Image processing
+- **Nodemon** - Development server
+- **Prettier** & **Husky** - Code quality & Git hooks
 
-### DevOps
-- Docker & Docker Compose
-- GitHub Actions for CI/CD
-- Nginx for production serving
+### DevOps & Infrastructure
+- **Docker** & **Docker Compose** - Containerization
+- **GitHub Actions** - CI/CD pipeline
+- **Nginx** (Alpine) - Reverse proxy & production serving
+- **Cloudflare R2** - Object storage (S3-compatible)
+
+### API Testing
+- **Bruno** - API testing client
 
 ## Prerequisites
 
 - Node.js (v18 or higher)
 - npm or bun
-- PostgreSQL
-- Docker (optional)
+- PostgreSQL 16
+- Redis 7 (optional, for caching)
+- Docker & Docker Compose (optional)
+- Cloudflare R2 account (for image storage)
 
 ## Getting Started
 
@@ -90,6 +112,8 @@ docker-compose up
 - `npm run test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
 - `npm run lint` - Lint code
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 
 ### Backend
 
@@ -97,37 +121,46 @@ docker-compose up
 - `npm start` - Start production server
 - `npm run prisma:generate` - Generate Prisma client
 - `npm run prisma:migrate` - Run database migrations
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
 
 ## Project Structure
 
 ```
 vivid_vitablends/
 ├── backend/
-│   ├── api-tests/          # API test files
 │   ├── prisma/             # Database schema and migrations
 │   ├── src/
 │   │   ├── config/         # Configuration files
 │   │   ├── controllers/    # Route controllers
 │   │   ├── middleware/     # Express middleware
-│   │   ├── models/         # Data models
+│   │   ├── repositories/   # Data access layer
 │   │   ├── routes/         # API routes
 │   │   ├── services/       # Business logic
 │   │   ├── utils/          # Utility functions
 │   │   └── server.js       # Entry point
+│   ├── .husky/             # Git hooks
 │   └── Dockerfile
 ├── frontend/
 │   ├── public/             # Static assets
 │   ├── src/
 │   │   ├── assets/         # Images, fonts, etc.
 │   │   ├── components/     # React components
+│   │   ├── context/        # React context providers
 │   │   ├── hooks/          # Custom hooks
 │   │   ├── lib/            # Utility libraries
 │   │   ├── pages/          # Page components
-│   │   └── test/           # Test files
+│   │   ├── services/       # API services
+│   │   ├── test/           # Test files
+│   │   └── types/          # TypeScript types
+│   ├── .husky/             # Git hooks
 │   └── Dockerfile
+├── bruno/                  # API testing collection
+├── nginx/                  # Nginx configuration
 ├── .github/
 │   └── workflows/          # CI/CD workflows
-└── docker-compose.yml
+├── docker-compose.prod.yml # Production Docker setup
+└── scripts/                # Deployment scripts
 ```
 
 ## Environment Variables
@@ -136,8 +169,19 @@ vivid_vitablends/
 
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-PORT=3000
+DIRECT_URL=postgresql://user:password@localhost:5432/dbname
+PORT=5000
 NODE_ENV=development
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=86400
+R2_ACCOUNT_ID=your_r2_account_id
+R2_ACCESS_KEY_ID=your_r2_access_key
+R2_SECRET_ACCESS_KEY=your_r2_secret_key
+R2_BUCKET_NAME=your_bucket_name
+R2_PUBLIC_BUCKET_ID=your_public_bucket_id
+REDIS_ENABLED=true
+REDIS_URL=redis://localhost:6379
+REDIS_TTL=3600
 ```
 
 ### Frontend

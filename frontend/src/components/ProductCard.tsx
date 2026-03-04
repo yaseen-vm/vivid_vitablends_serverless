@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { Product } from "@/types/Product";
@@ -11,6 +12,7 @@ type ProductCardProps = {
 const ProductCard = ({ product }: ProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const isOutOfStock = product.inStock === false;
 
   const handleBuyNow = () => {
     navigate("/checkout", {
@@ -35,13 +37,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Card className="overflow-hidden transition hover:shadow-lg">
-      <div className="flex h-48 items-center justify-center bg-muted">
+      <div className="flex h-48 items-center justify-center bg-muted relative">
         <img
           src={product.image}
           alt={product.name}
           className="h-full w-auto object-contain"
           loading="lazy"
         />
+        {isOutOfStock && (
+          <Badge variant="destructive" className="absolute top-2 right-2">
+            Out of Stock
+          </Badge>
+        )}
       </div>
 
       <CardContent className="p-6">
@@ -56,11 +63,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         <div className="flex gap-3">
-          <Button className="w-1/2" onClick={handleBuyNow}>
-            Buy Now
+          <Button
+            className="w-1/2"
+            onClick={handleBuyNow}
+            disabled={isOutOfStock}
+          >
+            {isOutOfStock ? "Out of Stock" : "Buy Now"}
           </Button>
 
-          <Button variant="outline" className="w-1/2" onClick={handleAddToCart}>
+          <Button
+            variant="outline"
+            className="w-1/2"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+          >
             Add to Cart
           </Button>
         </div>

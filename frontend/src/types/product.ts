@@ -9,4 +9,5 @@ export type Product = {
   featured?: boolean;
   badge?: string;
   originalPrice?: number;
+  inStock?: boolean;
 };

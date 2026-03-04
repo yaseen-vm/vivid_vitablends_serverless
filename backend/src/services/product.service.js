@@ -162,7 +162,12 @@ export const update = async (id, data) => {
     data.image = await imageService.upload(data.image);
   }
 
-  const product = await productRepository.update(id, data);
+  const { categoryId, ...updateData } = data;
+  if (categoryId && categoryId !== exists.categoryId) {
+    updateData.category = { connect: { id: categoryId } };
+  }
+
+  const product = await productRepository.update(id, updateData);
   logger.info('Product updated', { productId: id });
   return product;
 };

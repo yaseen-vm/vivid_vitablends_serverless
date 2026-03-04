@@ -41,7 +41,11 @@ export const create = async (data) => {
 };
 
 export const update = async (id, data) => {
-  const product = await prisma.product.update({ where: { id }, data });
+  const product = await prisma.product.update({
+    where: { id },
+    data,
+    include: { category: true },
+  });
   await clearCache('/api/products*');
   return product;
 };

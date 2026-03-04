@@ -203,6 +203,7 @@ export const ProductsManagement = () => {
                       <TableHead>Name</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Price</TableHead>
+                      <TableHead>Stock</TableHead>
                       <TableHead>Featured</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -227,6 +228,13 @@ export const ProductsManagement = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>${product.price.toFixed(2)}</TableCell>
+                        <TableCell>
+                          {(product.inStock ?? true) ? (
+                            <Badge className="bg-green-500">In Stock</Badge>
+                          ) : (
+                            <Badge variant="destructive">Out of Stock</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {product.featured ? (
                             <Badge className="bg-green-500">Featured</Badge>

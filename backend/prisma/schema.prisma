@@ -58,6 +58,7 @@ model Product {
   featured      Boolean   @default(false)
   badge         String?
   originalPrice Float?
+  inStock       Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

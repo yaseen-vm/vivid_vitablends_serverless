@@ -212,49 +212,59 @@ const ProductsPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group rounded-xl bg-card p-3 shadow-sm transition-all hover:shadow-lg md:rounded-2xl md:p-5"
-                >
-                  <div className="mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-muted p-2 md:mb-4 md:rounded-xl md:p-3">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-contain transition-transform group-hover:scale-105"
-                      loading="lazy"
-                    />
+              {products.map((product) => {
+                const isOutOfStock = product.inStock === false;
+                return (
+                  <div
+                    key={product.id}
+                    className="group rounded-xl bg-card p-3 shadow-sm transition-all hover:shadow-lg md:rounded-2xl md:p-5"
+                  >
+                    <div className="mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-muted p-2 md:mb-4 md:rounded-xl md:p-3 relative">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-contain transition-transform group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      {isOutOfStock && (
+                        <span className="absolute top-2 right-2 bg-red-500 text-white text-[8px] md:text-xs font-bold px-2 py-1 rounded">
+                          Out of Stock
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="mb-1 text-xs font-semibold text-foreground line-clamp-2 md:mb-2 md:text-sm">
+                      {product.name}
+                    </h3>
+
+                    <p className="mb-2 text-[10px] text-muted-foreground line-clamp-2 md:mb-4 md:text-xs">
+                      {product.description}
+                    </p>
+
+                    <p className="mb-3 text-sm font-bold text-green-600 md:mb-4 md:text-base">
+                      ₹{product.price}
+                    </p>
+
+                    <div className="flex flex-col gap-2 md:flex-row">
+                      <button
+                        onClick={() => handleBuyNow(product)}
+                        disabled={isOutOfStock}
+                        className="flex-1 rounded-lg bg-warm-gold px-3 py-2 text-[10px] font-semibold text-white transition-all hover:bg-amber-600 active:scale-95 md:text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-warm-gold"
+                      >
+                        {isOutOfStock ? "Out of Stock" : "Buy Now"}
+                      </button>
+
+                      <button
+                        onClick={() => handleAddToCart(product)}
+                        disabled={isOutOfStock}
+                        className="flex-1 rounded-lg border-2 border-warm-gold px-3 py-2 text-[10px] font-semibold text-warm-gold transition-all hover:bg-warm-gold hover:text-white active:scale-95 md:text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-warm-gold"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
                   </div>
-
-                  <h3 className="mb-1 text-xs font-semibold text-foreground line-clamp-2 md:mb-2 md:text-sm">
-                    {product.name}
-                  </h3>
-
-                  <p className="mb-2 text-[10px] text-muted-foreground line-clamp-2 md:mb-4 md:text-xs">
-                    {product.description}
-                  </p>
-
-                  <p className="mb-3 text-sm font-bold text-green-600 md:mb-4 md:text-base">
-                    ₹{product.price}
-                  </p>
-
-                  <div className="flex flex-col gap-2 md:flex-row">
-                    <button
-                      onClick={() => handleBuyNow(product)}
-                      className="flex-1 rounded-lg bg-warm-gold px-3 py-2 text-[10px] font-semibold text-white transition-all hover:bg-amber-600 active:scale-95 md:text-xs"
-                    >
-                      Buy Now
-                    </button>
-
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="flex-1 rounded-lg border-2 border-warm-gold px-3 py-2 text-[10px] font-semibold text-warm-gold transition-all hover:bg-warm-gold hover:text-white active:scale-95 md:text-xs"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
