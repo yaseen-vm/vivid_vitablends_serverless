@@ -36,6 +36,6 @@
     "prisma": "^6.19.2"
   },
   "overrides": {
-    "minimatch": ">=10.2.3"
+    "minimatch": "10.2.3"
   }
 }
