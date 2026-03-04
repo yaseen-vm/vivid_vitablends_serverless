@@ -37,5 +37,8 @@
   },
   "overrides": {
     "minimatch": "10.2.3"
+  },
+  "resolutions": {
+    "minimatch": "10.2.3"
   }
 }
