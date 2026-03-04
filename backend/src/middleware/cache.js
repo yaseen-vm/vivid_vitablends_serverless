@@ -23,7 +23,11 @@ export const cache = (ttl = config.redisTtl) => {
 
       res.sendResponse = res.json;
       res.json = async (body) => {
-        await redisClient.setEx(key, ttl, JSON.stringify(body));
+        try {
+          await redisClient.setEx(key, ttl, JSON.stringify(body));
+        } catch (err) {
+          logger.error('Redis setEx cache error', { key, error: err });
+        }
         res.sendResponse(body);
       };
 
