@@ -1,5 +1,8 @@
 FROM node:20-alpine AS build
 
+# Update tar to fix CVE-2026-26960
+RUN apk update && apk upgrade tar
+
 WORKDIR /app
 
 COPY package*.json ./

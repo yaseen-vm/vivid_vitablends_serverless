@@ -1,6 +1,9 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache openssl curl && \
+
+RUN apk update && \
+    apk upgrade tar && \
+    apk add --no-cache openssl curl && \
     addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs
 
