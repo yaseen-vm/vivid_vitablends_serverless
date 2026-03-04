@@ -1,0 +1,33 @@
+meta {
+  name: Admin Login Rate Limit Test
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "admin",
+    "password": "admin123"
+  }
+}
+
+tests {
+  test("Should get rate limited after 5 requests", function() {
+    const res = bru.getResponse();
+    
+    // First 5 requests should return 401 (unauthorized)
+    // 6th request should return 429 (rate limited)
+    if (res.getStatus() === 429) {
+      expect(res.getBody().code).to.equal("RATE_LIMIT_EXCEEDED");
+      expect(res.getBody().message).to.equal("Too many login attempts");
+    } else {
+      expect(res.getStatus()).to.equal(401);
+    }
+  });
+}

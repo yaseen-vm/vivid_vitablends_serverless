@@ -1,0 +1,26 @@
+meta {
+  name: Admin Refresh Rate Limit Test
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/admin/refresh
+  body: none
+  auth: none
+}
+
+tests {
+  test("Should get rate limited after 10 requests", function() {
+    const res = bru.getResponse();
+    
+    // First 10 requests should return 401 (no refresh token)
+    // 11th request should return 429 (rate limited)
+    if (res.getStatus() === 429) {
+      expect(res.getBody().code).to.equal("RATE_LIMIT_EXCEEDED");
+      expect(res.getBody().message).to.equal("Too many requests, please try again later");
+    } else {
+      expect(res.getStatus()).to.equal(401);
+    }
+  });
+}

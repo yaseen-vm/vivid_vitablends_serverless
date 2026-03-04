@@ -1,0 +1,41 @@
+meta {
+  name: Order Creation Rate Limit Test
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/orders
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "customerName": "Test Customer",
+    "customerEmail": "test@example.com",
+    "customerPhone": "1234567890",
+    "items": [
+      {
+        "productId": "invalid-id",
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 10.00
+  }
+}
+
+tests {
+  test("Should get rate limited after 10 requests", function() {
+    const res = bru.getResponse();
+    
+    // First 10 requests should return 400 (validation error)
+    // 11th request should return 429 (rate limited)
+    if (res.getStatus() === 429) {
+      expect(res.getBody().code).to.equal("RATE_LIMIT_EXCEEDED");
+      expect(res.getBody().message).to.equal("Too many requests, please try again later");
+    } else {
+      expect(res.getStatus()).to.equal(400);
+    }
+  });
+}

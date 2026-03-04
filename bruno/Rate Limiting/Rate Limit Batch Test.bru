@@ -1,0 +1,35 @@
+meta {
+  name: Rate Limit Batch Test
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/admin/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "admin@vividvitablends.com",
+    "password": "wrongpassword"
+  }
+}
+
+script:pre-request {
+  // Run this request multiple times to trigger rate limiting
+  console.log(`Request attempt: ${new Date().toISOString()}`);
+}
+
+tests {
+  test("Track rate limiting behavior", function() {
+    const res = bru.getResponse();
+    console.log(`Status: ${res.getStatus()}, Body:`, res.getBody());
+    
+    if (res.getStatus() === 429) {
+      console.log("🚫 Rate limit triggered!");
+      expect(res.getBody().code).to.equal("RATE_LIMIT_EXCEEDED");
+    }
+  });
+}

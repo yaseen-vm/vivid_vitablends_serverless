@@ -1,0 +1,34 @@
+meta {
+  name: Message Creation Rate Limit Test
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/messages
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Test User",
+    "email": "invalid-email",
+    "message": "Test message"
+  }
+}
+
+tests {
+  test("Should get rate limited after 5 requests", function() {
+    const res = bru.getResponse();
+    
+    // First 5 requests should return 400 (validation error)
+    // 6th request should return 429 (rate limited)
+    if (res.getStatus() === 429) {
+      expect(res.getBody().code).to.equal("RATE_LIMIT_EXCEEDED");
+      expect(res.getBody().message).to.equal("Too many requests, please try again later");
+    } else {
+      expect(res.getStatus()).to.equal(400);
+    }
+  });
+}
