@@ -159,37 +159,37 @@ const CategoryManagement = () => {
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="flex items-center justify-between rounded-lg border p-4"
+                className="rounded-lg border p-3 space-y-3"
               >
-                <div className="flex flex-1 items-center gap-4">
+                <div className="flex items-start gap-3">
                   {category.image && (
                     <img
                       src={category.image}
                       alt={category.name}
-                      className="h-12 w-12 rounded-lg object-cover"
+                      className="h-12 w-12 shrink-0 rounded-lg object-cover"
                     />
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h3 className="font-semibold capitalize">
                       {category.name}
                     </h3>
                     {category.description && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {category.description}
                       </p>
                     )}
                   </div>
-                </div>
-
-                <div className="flex items-center gap-4">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openEditDialog(category)}
+                    className="shrink-0"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
+                </div>
 
+                <div className="flex items-center justify-between gap-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Label htmlFor={`order-${category.id}`} className="text-sm">
                       Order:
@@ -206,14 +206,14 @@ const CategoryManagement = () => {
                           parseInt(e.target.value) || 0
                         )
                       }
-                      className="w-20"
+                      className="w-16"
                       disabled={updating === category.id}
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
                     <Label htmlFor={`show-${category.id}`} className="text-sm">
-                      Show on Homepage:
+                      Homepage:
                     </Label>
                     <Switch
                       id={`show-${category.id}`}
