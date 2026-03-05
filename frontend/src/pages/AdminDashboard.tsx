@@ -2,12 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Package, Star, ShoppingCart, LogOut, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductsManagement } from "@/components/admin/ProductsManagement";
 import { ReviewsManagement } from "@/components/admin/ReviewsManagement";
@@ -23,10 +18,7 @@ import { authStorage } from "@/lib/storage";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { logout, isLoading: logoutLoading } = useAdminAuth();
-  const {
-    products,
-    stats: productStats,
-  } = useAdminProducts();
+  const { products, stats: productStats } = useAdminProducts();
   const { stats: reviewStats, loading: reviewsLoading } = useAdminReviews();
   const { orders, loading: ordersLoading } = useAdminOrders();
   const { categories, loading: categoriesLoading } = useCategories();

@@ -168,19 +168,19 @@ vivid_vitablends/
 ### Backend (.env)
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-DIRECT_URL=postgresql://user:password@localhost:5432/dbname
+DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE_NAME]
+DIRECT_URL=postgresql://[USERNAME]:[PASSWORD]@[HOST]:[PORT]/[DATABASE_NAME]
 PORT=5000
 NODE_ENV=development
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=[GENERATE_SECURE_JWT_SECRET_HERE]
 JWT_EXPIRES_IN=86400
-R2_ACCOUNT_ID=your_r2_account_id
-R2_ACCESS_KEY_ID=your_r2_access_key
-R2_SECRET_ACCESS_KEY=your_r2_secret_key
-R2_BUCKET_NAME=your_bucket_name
-R2_PUBLIC_BUCKET_ID=your_public_bucket_id
+R2_ACCOUNT_ID=[YOUR_CLOUDFLARE_R2_ACCOUNT_ID]
+R2_ACCESS_KEY_ID=[YOUR_R2_ACCESS_KEY_ID]
+R2_SECRET_ACCESS_KEY=[YOUR_R2_SECRET_ACCESS_KEY]
+R2_BUCKET_NAME=[YOUR_BUCKET_NAME]
+R2_PUBLIC_BUCKET_ID=[YOUR_PUBLIC_BUCKET_ID]
 REDIS_ENABLED=true
-REDIS_URL=redis://localhost:6379
+REDIS_URL=redis://[HOST]:[PORT]
 REDIS_TTL=3600
 ```
 
