@@ -38,7 +38,11 @@ const productSchema = z.object({
   image: z.string().min(1, "Image is required"),
   categoryId: z.string().min(1, "Category is required"),
   featured: z.boolean().optional(),
-  badge: z.string().optional(),
+  badge: z
+    .string()
+    .max(50, "Badge must be 50 characters or less")
+    .regex(/^[a-zA-Z0-9\s%!-]*$/, "Badge can only contain letters, numbers, spaces, %, !, and -")
+    .optional(),
   originalPrice: z.coerce.number().nonnegative().optional(),
   inStock: z.boolean().optional(),
 });

@@ -7,7 +7,11 @@ export const productSchema = z.object({
   categoryId: z.string().cuid(),
   image: z.string().url().or(z.string().startsWith('data:image/')),
   featured: z.boolean().optional(),
-  badge: z.string().max(50).optional(),
+  badge: z
+    .string()
+    .max(50)
+    .regex(/^[a-zA-Z0-9\s%!-]*$/, 'Badge can only contain letters, numbers, spaces, %, !, and -')
+    .optional(),
   originalPrice: z.number().positive().optional(),
   inStock: z.boolean().optional(),
 });
@@ -19,7 +23,11 @@ export const productUpdateSchema = z.object({
   categoryId: z.string().cuid().optional(),
   image: z.string().url().or(z.string().startsWith('data:image/')).optional(),
   featured: z.boolean().optional(),
-  badge: z.string().max(50).optional(),
+  badge: z
+    .string()
+    .max(50)
+    .regex(/^[a-zA-Z0-9\s%!-]*$/, 'Badge can only contain letters, numbers, spaces, %, !, and -')
+    .optional(),
   originalPrice: z.number().positive().optional(),
   inStock: z.boolean().optional(),
 });
