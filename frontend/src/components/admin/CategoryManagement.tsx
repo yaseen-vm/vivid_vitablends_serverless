@@ -125,6 +125,14 @@ const CategoryManagement = () => {
       toast.error("Category name is required");
       return;
     }
+    if (formData.name.length > 100) {
+      toast.error("Category name must not exceed 100 characters");
+      return;
+    }
+    if (formData.description.length > 500) {
+      toast.error("Description must not exceed 500 characters");
+      return;
+    }
 
     setUpdating(editingCategory.id);
     try {
