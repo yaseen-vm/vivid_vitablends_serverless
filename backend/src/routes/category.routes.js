@@ -7,6 +7,7 @@ import { validate } from '../middleware/validate.js';
 import {
   categorySchema,
   categoryUpdateSchema,
+  categoryHomepageSchema,
 } from '../schemas/category.schema.js';
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.put(
   '/:id/homepage',
   authenticate,
   requireAdmin,
+  validate(categoryHomepageSchema),
   categoryController.updateHomepageVisibility
 );
 router.put(
