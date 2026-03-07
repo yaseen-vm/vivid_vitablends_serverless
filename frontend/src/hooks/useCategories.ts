@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { categoryApi } from "@/services/api/productApi";
+import { categoryApi } from "@/services/api/categoryApi";
 import { Category } from "@/types/Category";
 import { EXCLUDED_CATEGORY_NAMES } from "@/lib/constants";
 

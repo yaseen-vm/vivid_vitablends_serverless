@@ -9,6 +9,7 @@ import { ReviewsManagement } from "@/components/admin/ReviewsManagement";
 import { OrdersManagement } from "@/components/admin/OrdersManagement";
 import CategoryManagement from "@/components/admin/CategoryManagement";
 import { ComingSoonManagement } from "@/components/admin/ComingSoonManagement";
+import { MessagesManagement } from "@/components/admin/MessagesManagement";
 import { useAdminProducts } from "@/hooks/useAdminProducts";
 import { useAdminReviews } from "@/hooks/useAdminReviews";
 import { useAdminOrders } from "@/hooks/useAdminOrders";
@@ -57,14 +58,52 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="coming-soon">Coming Soon</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto pb-2">
+            <TabsList className="inline-flex w-full sm:w-auto flex-wrap sm:flex-nowrap h-auto sm:h-10 gap-1 p-1">
+              <TabsTrigger
+                value="overview"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger
+                value="categories"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Categories
+              </TabsTrigger>
+              <TabsTrigger
+                value="products"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Products
+              </TabsTrigger>
+              <TabsTrigger
+                value="coming-soon"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Coming Soon
+              </TabsTrigger>
+              <TabsTrigger
+                value="reviews"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Reviews
+              </TabsTrigger>
+              <TabsTrigger
+                value="orders"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Orders
+              </TabsTrigger>
+              <TabsTrigger
+                value="messages"
+                className="flex-1 sm:flex-none min-w-[100px]"
+              >
+                Messages
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -163,6 +202,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="orders">
             <OrdersManagement />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <MessagesManagement />
           </TabsContent>
         </Tabs>
       </div>

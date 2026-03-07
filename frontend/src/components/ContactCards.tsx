@@ -1,6 +1,7 @@
 import { Mail, Phone, MessageCircle, Star } from "lucide-react";
 import { useState } from "react";
 import { useReviewSubmit } from "@/hooks/useReviewSubmit";
+import { CONTACT_INFO } from "@/config/contacts";
 
 const getStarColor = (value: number) => {
   switch (value) {
@@ -20,13 +21,9 @@ const getStarColor = (value: number) => {
 };
 
 const contacts = [
-  { icon: Mail, label: "Email Us", href: "mailto:hello@vividvitablends.com" },
-  {
-    icon: MessageCircle,
-    label: "WhatsApp",
-    href: "https://wa.me/919876543210",
-  },
-  { icon: Phone, label: "Call Us", href: "tel:+919876543210" },
+  { icon: Mail, label: "Email Us", href: `mailto:${CONTACT_INFO.email}` },
+  { icon: MessageCircle, label: "WhatsApp", href: CONTACT_INFO.whatsapp },
+  { icon: Phone, label: "Call Us", href: `tel:${CONTACT_INFO.phone}` },
 ];
 
 const ContactCards = () => {

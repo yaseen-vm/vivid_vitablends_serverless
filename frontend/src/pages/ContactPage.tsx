@@ -1,21 +1,14 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Instagram,
-  Facebook,
-  Twitter,
-  ArrowLeft,
-} from "lucide-react";
+import { Mail, Phone, MapPin, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMessageSubmit } from "@/hooks/useMessageSubmit";
+import { CONTACT_INFO } from "@/config/contacts";
 
 const contactSchema = z.object({
   name: z
@@ -92,10 +85,10 @@ const Contact = () => {
                 <div>
                   <h4 className="font-semibold">Phone</h4>
                   <a
-                    href="tel:+919999999999"
+                    href={`tel:${CONTACT_INFO.phone}`}
                     className="text-muted-foreground hover:text-accent"
                   >
-                    +91 99999 99999
+                    {CONTACT_INFO.phoneDisplay}
                   </a>
                 </div>
               </CardContent>
@@ -108,10 +101,10 @@ const Contact = () => {
                 <div>
                   <h4 className="font-semibold">Email</h4>
                   <a
-                    href="mailto:support@vividvitablends.com"
+                    href={`mailto:${CONTACT_INFO.email}`}
                     className="text-muted-foreground hover:text-accent"
                   >
-                    support@vividvitablends.com
+                    {CONTACT_INFO.email}
                   </a>
                 </div>
               </CardContent>
@@ -124,12 +117,12 @@ const Contact = () => {
                 <div>
                   <h4 className="font-semibold">WhatsApp</h4>
                   <a
-                    href="https://wa.me/919999999999"
+                    href={CONTACT_INFO.whatsapp}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-accent"
                   >
-                    +91 99999 99999
+                    {CONTACT_INFO.phoneDisplay}
                   </a>
                 </div>
               </CardContent>
@@ -142,12 +135,12 @@ const Contact = () => {
                 <div>
                   <h4 className="font-semibold">Address</h4>
                   <a
-                    href="https://www.google.com/maps/search/?api=1&query=Cheruvaranam,Kerala,India"
+                    href={CONTACT_INFO.addressMapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground hover:text-accent"
                   >
-                    Cheruvaranam, Kerala, India
+                    {CONTACT_INFO.address}
                   </a>
                 </div>
               </CardContent>
@@ -209,40 +202,6 @@ const Contact = () => {
               </form>
             </CardContent>
           </Card>
-        </div>
-
-        {/* SOCIAL SECTION */}
-        <div className="mt-16 text-center">
-          <h3 className="text-xl font-semibold mb-6">Follow Us</h3>
-
-          <div className="flex justify-center gap-6">
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-border transition hover:border-accent hover:text-accent hover:scale-110"
-            >
-              <Instagram size={22} />
-            </a>
-
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-border transition hover:border-accent hover:text-accent hover:scale-110"
-            >
-              <Facebook size={22} />
-            </a>
-
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-border transition hover:border-accent hover:text-accent hover:scale-110"
-            >
-              <Twitter size={22} />
-            </a>
-          </div>
         </div>
       </div>
     </div>

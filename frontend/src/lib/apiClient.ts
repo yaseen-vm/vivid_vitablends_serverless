@@ -109,11 +109,29 @@ export const apiClient = async (
     throw new Error(`Invalid API URL: ${url}`);
   }
 
-  const token = sessionStorage.getItem("adminToken");
+  let token = sessionStorage.getItem("adminToken");
 
-  if (!token && url.includes("/api/products") && options.method !== "GET") {
-    window.location.href = "/#/sys-admin-portal";
-    throw new Error("No authentication token found");
+  // Validate token format (JWT has 3 parts separated by dots)
+  if (token && token.split(".").length !== 3) {
+    sessionStorage.removeItem("adminToken");
+    token = null;
+  }
+
+  // If no token, try to refresh from cookie before failing
+  if (!token && !isRefreshing) {
+    try {
+      token = await refreshToken();
+    } catch {
+      // Refresh failed, throw error for protected routes
+      if (url.includes("/api/admin") || url.includes("/api/messages")) {
+        throw new Error("Authentication required");
+      }
+    }
+  }
+
+  // Block requests that require auth but have no token
+  if (!token && (url.includes("/api/admin") || url.includes("/api/messages"))) {
+    throw new Error("Authentication required");
   }
 
   const headers: HeadersInit = {
@@ -122,7 +140,11 @@ export const apiClient = async (
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
-  const response = await safeFetch(url, { ...options, headers });
+  const response = await safeFetch(url, {
+    ...options,
+    headers,
+    credentials: "include", // Include cookies for refresh token
+  });
 
   if (response.status === 401) {
     const data = await response.json();
@@ -136,6 +158,7 @@ export const apiClient = async (
                 safeFetch(url, {
                   ...options,
                   headers: { ...headers, Authorization: `Bearer ${newToken}` },
+                  credentials: "include",
                 })
               ),
             reject,
@@ -150,6 +173,7 @@ export const apiClient = async (
         return safeFetch(url, {
           ...options,
           headers: { ...headers, Authorization: `Bearer ${newToken}` },
+          credentials: "include",
         });
       } catch (error) {
         processQueue(error as Error, null);

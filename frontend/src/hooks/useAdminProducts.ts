@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { productApi, categoryApi } from "@/services/api/productApi";
+import { productApi } from "@/services/api/productApi";
+import { categoryApi } from "@/services/api/categoryApi";
 import { Product } from "@/types/Product";
 import { toast } from "sonner";
 

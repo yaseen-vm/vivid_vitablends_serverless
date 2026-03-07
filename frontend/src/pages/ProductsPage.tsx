@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
-import { categoryApi } from "@/services/api/productApi";
+import { categoryApi } from "@/services/api/categoryApi";
 import { Product } from "@/types/Product";
 import { Category } from "@/types/Category";
 import { useState, useMemo, useEffect } from "react";

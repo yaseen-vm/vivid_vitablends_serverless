@@ -1,5 +1,6 @@
 import SocialIcon from "./SocialIcon";
 import { useNavigate } from "react-router-dom";
+import { CONTACT_INFO } from "@/config/contacts";
 
 const quickLinks = [
   { name: "About Us", scrollTo: "about" },
@@ -49,7 +50,7 @@ const Footer = () => {
 
             <div className="mt-4 flex gap-3">
               <a
-                href="https://instagram.com"
+                href={CONTACT_INFO.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-accent hover:text-accent"
@@ -59,17 +60,15 @@ const Footer = () => {
               </a>
 
               <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`mailto:${CONTACT_INFO.email}`}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-accent hover:text-accent"
-                aria-label="Facebook"
+                aria-label="Email"
               >
-                <SocialIcon type="facebook" size={18} />
+                <SocialIcon type="email" size={18} />
               </a>
 
               <a
-                href="https://wa.me/919999999999"
+                href={CONTACT_INFO.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-all hover:border-accent hover:text-accent"
