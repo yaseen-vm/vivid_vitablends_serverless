@@ -3,6 +3,7 @@ import * as adminRepository from '../repositories/admin.repository.js';
 import * as sessionRepository from '../repositories/session.repository.js';
 import config from '../config/index.js';
 import logger from '../utils/logger.js';
+import { hashToken } from '../utils/hash.js';
 import {
   getDeviceInfo,
   getIpAddress,
@@ -80,6 +81,23 @@ export const refresh = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     const refreshToken = req.cookies[config.refreshTokenCookieName];
+
+    if (refreshToken) {
+      const refreshTokenHash = hashToken(refreshToken);
+      const session = await sessionRepository.findByTokenHash(refreshTokenHash);
+
+      if (session && session.adminId !== req.user.id) {
+        logger.warn('Token ownership mismatch during logout', {
+          userId: req.user.id,
+          sessionAdminId: session.adminId,
+        });
+        throw Object.assign(new Error('Invalid session'), {
+          statusCode: 403,
+          code: 'INVALID_SESSION',
+        });
+      }
+    }
+
     const result = await adminService.logout(refreshToken);
 
     clearRefreshTokenCookie(res);

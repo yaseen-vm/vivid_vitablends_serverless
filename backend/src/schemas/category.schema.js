@@ -15,3 +15,8 @@ export const categoryUpdateSchema = z.object({
   showOnHome: z.boolean().optional(),
   displayOrder: z.number().int().min(0).optional(),
 });
+
+export const categoryHomepageSchema = z.object({
+  showOnHome: z.boolean(),
+  displayOrder: z.number().int().min(0),
+});

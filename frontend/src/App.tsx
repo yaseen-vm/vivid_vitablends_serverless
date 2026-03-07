@@ -20,6 +20,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { CartProvider } from "@/context/CartContext";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import ReviewsPage from "./pages/ReviewsPage";
 
 const App = () => {
   const queryClient = useMemo(() => new QueryClient(), []);
@@ -48,6 +49,7 @@ const App = () => {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/reviews" element={<ReviewsPage />} />
               <Route path="/shipping-policy" element={<ShippingPolicy />} />
               <Route path="/return-policy" element={<ReturnPolicy />} />
               <Route path="/faq" element={<Faq />} />
