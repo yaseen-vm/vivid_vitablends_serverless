@@ -1,8 +1,4 @@
 {
-  "frontend/**/*.{ts,tsx,css,md,json}": [
-    "cd frontend && prettier --write"
-  ],
-  "backend/**/*.js": [
-    "cd backend && prettier --write"
-  ]
+  "*.{ts,tsx,css,md,json}": "prettier --write",
+  "backend/**/*.js": "prettier --write"
 }
