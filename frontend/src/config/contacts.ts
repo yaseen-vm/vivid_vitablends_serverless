@@ -6,5 +6,5 @@ export const CONTACT_INFO = {
   address: "Edappally, Kochi, Kerala",
   addressMapUrl:
     "https://www.google.com/maps/search/?api=1&query=Edappally,Kochi,Kerala",
-  instagram: "https://instagram.com/vividvitablends",
+  instagram: "https://www.instagram.com/vivid__vitablends_/",
 } as const;

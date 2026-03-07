@@ -33,19 +33,20 @@ const ProductsPage = () => {
     fetchCategories();
   }, []);
 
-  // Set active category from URL params
+  // Set active category from URL params on mount only
   useEffect(() => {
     const categoryParam = searchParams.get("category");
-    if (categoryParam) {
-      // Check if it's a category name (slug) or ID
+    if (categoryParam && categories.length > 0) {
       const matchedCategory = categories.find(
         (cat) =>
           cat.name.toLowerCase() === categoryParam.toLowerCase() ||
           cat.id === categoryParam
       );
-      setActiveCategory(matchedCategory ? matchedCategory.id : categoryParam);
+      if (matchedCategory) {
+        setActiveCategory(matchedCategory.id);
+      }
     }
-  }, [searchParams, categories]);
+  }, [categories]);
 
   // Filter products by category and search
   const products = useMemo(() => {
@@ -92,18 +93,6 @@ const ProductsPage = () => {
 
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategory(categoryId);
-    const newParams = new URLSearchParams(searchParams);
-    if (categoryId === "all") {
-      newParams.delete("category");
-    } else {
-      // Use category name for URL
-      const category = categories.find((cat) => cat.id === categoryId);
-      newParams.set(
-        "category",
-        category ? encodeURIComponent(category.name.toLowerCase()) : categoryId
-      );
-    }
-    navigate(`/products?${newParams.toString()}`, { replace: true });
   };
 
   // Create category options for tabs
