@@ -49,8 +49,20 @@ const ReturnPolicy = () => {
               <p className="text-muted-foreground mb-2">You must:</p>
 
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>Inform us within 24 hours</li>
-                <li>Share clear photos of the product and packaging</li>
+                <li>
+                  Inform us <strong>within 24 hours</strong>.{" "}
+                  <span className="text-red-600 font-semibold">
+                    Claims after 24 hours cannot be processed
+                  </span>
+                  .
+                </li>
+                <li>
+                  Share clear{" "}
+                  <span className="text-red-600 font-semibold">
+                    photos and a video of the package opening
+                  </span>{" "}
+                  showing the product and packaging as proof.
+                </li>
               </ul>
             </div>
 

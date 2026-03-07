@@ -24,7 +24,7 @@ const StorylineSection = () => {
           {/* ================= TEXT ================= */}
           <div className="text-center md:text-left space-y-8">
             <div className="space-y-4">
-              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h2 className="font-display text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 <span className="bg-gradient-to-r from-amber-900 via-orange-800 to-amber-900 bg-clip-text text-transparent">
                   Food the way
                 </span>
@@ -67,7 +67,8 @@ const StorylineSection = () => {
 
               <div className="pt-4">
                 <p className="text-2xl md:text-3xl font-display font-semibold bg-gradient-to-r from-amber-800 via-orange-700 to-amber-800 bg-clip-text text-transparent leading-snug">
-                  Because good food doesn't just fill you — it cares for you.
+                  Because good food doesn't just fill you <br></br>- it cares
+                  for you.
                 </p>
               </div>
             </div>
