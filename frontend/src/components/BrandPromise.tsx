@@ -20,7 +20,7 @@ const BrandPromise = () => {
     <section className="section-padding bg-secondary">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
-          {promises.map((p, i) => (
+          {promises.map((p) => (
             <div
               key={p.title}
               className={`card-hover flex flex-col items-center rounded-lg bg-card p-4 text-center md:p-8`}

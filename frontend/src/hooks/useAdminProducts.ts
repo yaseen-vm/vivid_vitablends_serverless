@@ -14,7 +14,7 @@ export const useAdminProducts = () => {
     try {
       const data = await categoryApi.getAll();
       setCategories(data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load categories");
     }
   }, []);
@@ -24,7 +24,7 @@ export const useAdminProducts = () => {
       setLoading(true);
       const data = await productApi.getAll();
       setProducts(data);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load products");
     } finally {
       setLoading(false);
@@ -75,9 +75,9 @@ export const useAdminProducts = () => {
       await productApi.delete(id);
       toast.success("Product deleted successfully");
       setProducts((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete product");
-      throw err;
+      throw new Error("Failed to delete product");
     }
   };
 
@@ -87,7 +87,7 @@ export const useAdminProducts = () => {
       toast.success("Category created successfully");
       await fetchCategories();
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Failed to create category");
       return false;
     }

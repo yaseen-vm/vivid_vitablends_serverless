@@ -1,4 +1,18 @@
 {
+  "name": "vivid-vitablends",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "prepare": "husky",
+    "lint-staged": "lint-staged"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.0"
+  },
   "dependencies": {
     "minimatch": "^10.2.3"
   }

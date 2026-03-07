@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { categoryApi } from "@/services/api/productApi";
 import { toast } from "sonner";
 import { Pencil } from "lucide-react";
+import { z } from "zod";
 import {
   Card,
   CardContent,
@@ -34,6 +35,18 @@ const ALLOWED_IMAGE_TYPES = [
   "image/webp",
 ];
 
+const categoryUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Category name is required")
+    .max(100, "Category name must not exceed 100 characters"),
+  description: z
+    .string()
+    .max(500, "Description must not exceed 500 characters")
+    .optional(),
+  image: z.string().optional(),
+});
+
 const CategoryManagement = () => {
   const { categories, loading } = useCategories();
   const queryClient = useQueryClient();
@@ -59,7 +72,7 @@ const CategoryManagement = () => {
       );
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category visibility updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update category");
     } finally {
       setUpdating(null);
@@ -71,6 +84,10 @@ const CategoryManagement = () => {
     showOnHome: boolean,
     newOrder: number
   ) => {
+    if (newOrder < 0 || newOrder > 999 || !Number.isInteger(newOrder)) {
+      toast.error("Display order must be between 0 and 999");
+      return;
+    }
     setUpdating(categoryId);
     try {
       await categoryApi.updateHomepageVisibility(
@@ -80,7 +97,7 @@ const CategoryManagement = () => {
       );
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Display order updated");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update display order");
     } finally {
       setUpdating(null);
@@ -121,8 +138,11 @@ const CategoryManagement = () => {
 
   const handleUpdate = async () => {
     if (!editingCategory) return;
-    if (!formData.name.trim()) {
-      toast.error("Category name is required");
+
+    const validation = categoryUpdateSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -132,9 +152,9 @@ const CategoryManagement = () => {
       await queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast.success("Category updated successfully");
       setEditingCategory(null);
-    } catch (error) {
+    } catch (err) {
       const message =
-        error instanceof Error ? error.message : "Failed to update category";
+        err instanceof Error ? err.message : "Failed to update category";
       toast.error(message);
     } finally {
       setUpdating(null);
@@ -198,14 +218,36 @@ const CategoryManagement = () => {
                       id={`order-${category.id}`}
                       type="number"
                       min="0"
+                      max="999"
+                      step="1"
                       value={category.displayOrder}
-                      onChange={(e) =>
-                        handleDisplayOrderChange(
-                          category.id,
-                          category.showOnHome,
-                          parseInt(e.target.value) || 0
-                        )
-                      }
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= 0 && value <= 999) {
+                          handleDisplayOrderChange(
+                            category.id,
+                            category.showOnHome,
+                            value
+                          );
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (
+                          e.key === "-" ||
+                          e.key === "e" ||
+                          e.key === "E" ||
+                          e.key === "." ||
+                          e.key === "+"
+                        ) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        const pastedText = e.clipboardData.getData("text");
+                        if (!/^\d+$/.test(pastedText)) {
+                          e.preventDefault();
+                        }
+                      }}
                       className="w-16"
                       disabled={updating === category.id}
                     />
@@ -257,6 +299,7 @@ const CategoryManagement = () => {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Enter category name"
+                maxLength={100}
               />
             </div>
 
@@ -270,7 +313,11 @@ const CategoryManagement = () => {
                 }
                 placeholder="Enter category description"
                 rows={3}
+                maxLength={500}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                {formData.description.length}/500 characters
+              </p>
             </div>
 
             <div>

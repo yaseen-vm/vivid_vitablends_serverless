@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useReviews } from "@/hooks/useReviews";
+import { Button } from "@/components/ui/button";
 
 const ReviewsSection = () => {
   const { reviews: homepageReviews, loading } = useReviews(true);
+  const navigate = useNavigate();
 
   const [index, setIndex] = useState(0);
 
@@ -36,6 +39,13 @@ const ReviewsSection = () => {
           <h2 className="mt-2 font-display text-3xl font-bold text-foreground md:text-4xl">
             Customer Reviews
           </h2>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => navigate("/reviews")}
+          >
+            Leave a Review
+          </Button>
         </div>
 
         <div className="relative overflow-hidden">

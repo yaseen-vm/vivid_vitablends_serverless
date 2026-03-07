@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, MapPin, Phone, User } from "lucide-react";
+import { ArrowLeft, Mail, MapPin, Phone, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
@@ -13,10 +13,13 @@ const CheckoutPage = () => {
   const { cart, clearCart } = useCart();
 
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [pincode, setPincode] = useState("");
+  const [state, setState] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const buyNowItem = location.state?.buyNowItem;
 
@@ -31,39 +34,97 @@ const CheckoutPage = () => {
     );
   }, [checkoutItems]);
 
+  const validateField = (field: string, value: string) => {
+    if (field === "name") {
+      if (!value.trim()) return "Name is required";
+      if (value.length < 2) return "Name must be at least 2 characters";
+      if (!/^[a-zA-Z\s.'-]+$/.test(value)) return "Only letters allowed";
+    }
+    if (field === "email") {
+      if (!value.trim()) return "Email is required";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Invalid email";
+    }
+    if (field === "phone") {
+      const cleanPhone = value.replace(/\D/g, "");
+      if (!cleanPhone) return "Phone is required";
+      if (cleanPhone.length !== 10) return "Must be 10 digits";
+    }
+    if (field === "address") {
+      if (!value.trim()) return "Address is required";
+    }
+    if (field === "city") {
+      if (!value.trim()) return "City is required";
+      if (value.length < 2) return "City must be at least 2 characters";
+      if (!/^[a-zA-Z\s.'-]+$/.test(value)) return "Only letters allowed";
+    }
+    if (field === "pincode") {
+      const cleanPincode = value.replace(/\D/g, "");
+      if (!cleanPincode) return "Pincode is required";
+      if (cleanPincode.length !== 6) return "Must be 6 digits";
+    }
+    if (field === "state") {
+      if (!value.trim()) return "State is required";
+      if (value.length < 2) return "State must be at least 2 characters";
+      if (!/^[a-zA-Z\s]+$/.test(value)) return "Only letters allowed";
+    }
+    return "";
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    switch (field) {
+      case "name":
+        setName(value);
+        break;
+      case "email":
+        setEmail(value);
+        break;
+      case "phone":
+        setPhone(value);
+        break;
+      case "address":
+        setAddress(value);
+        break;
+      case "city":
+        setCity(value);
+        break;
+      case "pincode":
+        setPincode(value);
+        break;
+      case "state":
+        setState(value);
+        break;
+    }
+    const error = validateField(field, value);
+    setErrors((prev) => ({ ...prev, [field]: error }));
+  };
+
   const validate = () => {
-    if (!name.trim()) return "Please enter your name";
-
-    const cleanPhone = phone.replace(/\D/g, "");
-    if (!cleanPhone || cleanPhone.length !== 10) {
-      return "Please enter a valid 10-digit phone number";
-    }
-
-    if (!address.trim()) return "Please enter your delivery address";
-    if (!city.trim()) return "Please enter your city";
-
-    const cleanPincode = pincode.replace(/\D/g, "");
-    if (!cleanPincode || cleanPincode.length !== 6) {
-      return "Please enter a valid 6-digit pincode";
-    }
-
-    if (checkoutItems.length === 0) return "No products to checkout";
-    return null;
+    const newErrors: Record<string, string> = {};
+    newErrors.name = validateField("name", name);
+    newErrors.email = validateField("email", email);
+    newErrors.phone = validateField("phone", phone);
+    newErrors.address = validateField("address", address);
+    newErrors.city = validateField("city", city);
+    newErrors.pincode = validateField("pincode", pincode);
+    newErrors.state = validateField("state", state);
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((err) => err);
   };
 
   const handleWhatsAppOrder = async () => {
-    const error = validate();
-    if (error) {
-      toast.error(error);
+    if (!validate()) {
+      toast.error("Please fix the errors in the form");
       return;
     }
 
     try {
       await orderApi.create({
         customerName: name,
+        email,
         phone: phone.replace(/\D/g, ""),
         address,
         city,
+        state,
         pincode: pincode.replace(/\D/g, ""),
         items: checkoutItems.map((item) => ({
           productId: item.id,
@@ -74,8 +135,9 @@ const CheckoutPage = () => {
         total,
         sendWhatsApp: true,
       });
-    } catch (err) {
-      toast.error("Failed to save order");
+    } catch {
+      toast.error("Failed to save order. Please check your details.");
+      return;
     }
 
     const itemsText = checkoutItems
@@ -91,8 +153,9 @@ const CheckoutPage = () => {
 🛒 *New Order - Vivid Vitablends*
 
 👤 Name: ${name}
+📧 Email: ${email}
 📞 Phone: ${phone}
-📍 Address: ${address}, ${city} - ${pincode}
+📍 Address: ${address}, ${city}, ${state} - ${pincode}
 
 📦 Items:
 ${itemsText}
@@ -145,61 +208,128 @@ Please confirm availability & delivery time.
                 <label className="mb-1 block text-sm font-medium">
                   Full Name
                 </label>
-                <div className="flex items-center gap-2 rounded-xl border px-3 py-2">
+                <div
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${errors.name ? "border-red-500" : ""}`}
+                >
                   <User size={18} />
                   <input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => handleFieldChange("name", e.target.value)}
                     placeholder="Enter your full name"
                     className="w-full bg-transparent text-sm outline-none"
                   />
                 </div>
+                {errors.name && (
+                  <p className="mt-1 text-xs text-red-500">{errors.name}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Email Address
+                </label>
+                <div
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${errors.email ? "border-red-500" : ""}`}
+                >
+                  <Mail size={18} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => handleFieldChange("email", e.target.value)}
+                    placeholder="Enter your email address"
+                    className="w-full bg-transparent text-sm outline-none"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
+                )}
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   Phone Number
                 </label>
-                <div className="flex items-center gap-2 rounded-xl border px-3 py-2">
+                <div
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${errors.phone ? "border-red-500" : ""}`}
+                >
                   <Phone size={18} />
                   <input
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => handleFieldChange("phone", e.target.value)}
                     placeholder="Enter your 10-digit mobile number"
                     className="w-full bg-transparent text-sm outline-none"
                   />
                 </div>
+                {errors.phone && (
+                  <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
+                )}
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   Address
                 </label>
-                <div className="flex items-center gap-2 rounded-xl border px-3 py-2">
+                <div
+                  className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${errors.address ? "border-red-500" : ""}`}
+                >
                   <MapPin size={18} />
                   <textarea
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("address", e.target.value)
+                    }
                     placeholder="Enter your complete delivery address"
                     className="min-h-[90px] w-full resize-none bg-transparent text-sm outline-none"
                   />
                 </div>
+                {errors.address && (
+                  <p className="mt-1 text-xs text-red-500">{errors.address}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Enter your city"
-                  className="rounded-xl border px-3 py-2 text-sm outline-none"
-                />
+                <div>
+                  <input
+                    value={city}
+                    onChange={(e) => handleFieldChange("city", e.target.value)}
+                    placeholder="Enter your city"
+                    className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errors.city ? "border-red-500" : ""}`}
+                  />
+                  {errors.city && (
+                    <p className="mt-1 text-xs text-red-500">{errors.city}</p>
+                  )}
+                </div>
 
+                <div>
+                  <input
+                    value={pincode}
+                    onChange={(e) =>
+                      handleFieldChange("pincode", e.target.value)
+                    }
+                    placeholder="Enter 6-digit pincode"
+                    className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errors.pincode ? "border-red-500" : ""}`}
+                  />
+                  {errors.pincode && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.pincode}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  State/Province
+                </label>
                 <input
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
-                  placeholder="Enter 6-digit pincode"
-                  className="rounded-xl border px-3 py-2 text-sm outline-none"
+                  value={state}
+                  onChange={(e) => handleFieldChange("state", e.target.value)}
+                  placeholder="Enter your state or province"
+                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none ${errors.state ? "border-red-500" : ""}`}
                 />
+                {errors.state && (
+                  <p className="mt-1 text-xs text-red-500">{errors.state}</p>
+                )}
               </div>
             </div>
           </div>

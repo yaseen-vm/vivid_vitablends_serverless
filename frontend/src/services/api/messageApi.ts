@@ -12,11 +12,7 @@ export const messageApi = {
     const res = await fetch(`${API_BASE_URL}/api/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: data.name,
-        rating: 5,
-        comment: data.message,
-      }),
+      body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to send message");
     const json = await res.json();

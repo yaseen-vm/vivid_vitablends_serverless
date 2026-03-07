@@ -26,8 +26,8 @@ export const useAdminAuth = () => {
       });
 
       navigate("/sys-admin-dashboard");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Login failed";
+    } catch {
+      const errorMessage = "Login failed";
       setError(errorMessage);
 
       toast({
@@ -53,7 +53,7 @@ export const useAdminAuth = () => {
       });
 
       navigate("/sys-admin-portal");
-    } catch (err) {
+    } catch {
       authStorage.clear();
       navigate("/sys-admin-portal");
     } finally {

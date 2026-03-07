@@ -1,12 +1,5 @@
 import { Package, User } from "lucide-react";
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -17,13 +10,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -145,6 +131,36 @@ const OrderSection = ({
 }) => {
   if (orders.length === 0) return null;
 
+  const getAvailableStatuses = (currentStatus: string) => {
+    const transitions: Record<string, string[]> = {
+      PENDING: ["CONFIRMED", "CANCELLED"],
+      CONFIRMED: ["DELIVERED", "CANCELLED"],
+      CANCELLED: [],
+      DELIVERED: [],
+    };
+    return transitions[currentStatus] || [];
+  };
+
+  const hasActions = orders.some(
+    (o) => getAvailableStatuses(o.status).length > 0
+  );
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      CONFIRMED: "Confirm",
+      CANCELLED: "Cancel",
+      DELIVERED: "Mark Delivered",
+    };
+    return labels[status] || status;
+  };
+
+  const getButtonVariant = (status: string) => {
+    if (status === "CONFIRMED") return "default";
+    if (status === "CANCELLED") return "destructive";
+    if (status === "DELIVERED") return "outline";
+    return "secondary";
+  };
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -163,52 +179,55 @@ const OrderSection = ({
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead>Actions</TableHead>
+              {hasActions && <TableHead>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.orderId}</TableCell>
-                <TableCell>
-                  <UserDetailsModal order={order} />
-                </TableCell>
-                <TableCell>{order.phone}</TableCell>
-                <TableCell>
-                  <div className="text-sm max-w-[200px]">
-                    {order.items.map((item, i) => (
-                      <div key={item.id}>
-                        {item.name} × {item.quantity}
-                        {i < order.items.length - 1 && ", "}
+            {orders.map((order) => {
+              const availableStatuses = getAvailableStatuses(order.status);
+              return (
+                <TableRow key={order.id}>
+                  <TableCell className="font-medium">{order.orderId}</TableCell>
+                  <TableCell>
+                    <UserDetailsModal order={order} />
+                  </TableCell>
+                  <TableCell>{order.phone}</TableCell>
+                  <TableCell>
+                    <div className="text-sm max-w-[200px]">
+                      {order.items.map((item, i) => (
+                        <div key={item.id}>
+                          {item.name} × {item.quantity}
+                          {i < order.items.length - 1 && ", "}
+                        </div>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>₹{order.total}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={order.status} />
+                  </TableCell>
+                  <TableCell>
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  {hasActions && (
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {availableStatuses.map((status) => (
+                          <Button
+                            key={status}
+                            size="sm"
+                            variant={getButtonVariant(status)}
+                            onClick={() => updateStatus(order.id, status)}
+                          >
+                            {getStatusLabel(status)}
+                          </Button>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </TableCell>
-                <TableCell>₹{order.total}</TableCell>
-                <TableCell>
-                  <StatusBadge status={order.status} />
-                </TableCell>
-                <TableCell>
-                  {new Date(order.createdAt).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={order.status}
-                    onValueChange={(status) => updateStatus(order.id, status)}
-                  >
-                    <SelectTrigger className="w-[130px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                      <SelectItem value="DELIVERED">Delivered</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-              </TableRow>
-            ))}
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>

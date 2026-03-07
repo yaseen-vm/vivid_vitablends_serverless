@@ -37,6 +37,14 @@ const validateOrderData = (data) => {
   }
 
   if (
+    !data.state ||
+    typeof data.state !== 'string' ||
+    data.state.trim() === ''
+  ) {
+    errors.push({ field: 'state', message: 'State is required' });
+  }
+
+  if (
     !data.pincode ||
     typeof data.pincode !== 'string' ||
     !/^\d{6}$/.test(data.pincode)
@@ -83,6 +91,30 @@ export const create = async (data) => {
   validateOrderData(data);
 
   return await prisma.$transaction(async (tx) => {
+    // Verify all products exist
+    const productIds = data.items.map((item) => item.productId);
+    const products = await tx.product.findMany({
+      where: { id: { in: productIds } },
+      select: { id: true },
+    });
+
+    const foundIds = new Set(products.map((p) => p.id));
+    const missingIds = productIds.filter((id) => !foundIds.has(id));
+
+    if (missingIds.length > 0) {
+      logger.warn('Order validation failed - invalid products', { missingIds });
+      throw Object.assign(new Error('One or more products do not exist'), {
+        statusCode: 400,
+        code: 'INVALID_PRODUCT',
+        errors: [
+          {
+            field: 'items',
+            message: `Invalid product IDs: ${missingIds.join(', ')}`,
+          },
+        ],
+      });
+    }
+
     let user = await tx.user.findUnique({ where: { phone: data.phone } });
 
     if (!user) {
@@ -128,9 +160,11 @@ export const create = async (data) => {
       data: {
         orderId,
         customerName: data.customerName,
+        email: data.email,
         phone: data.phone,
         address: data.address,
         city: data.city,
+        state: data.state,
         pincode: data.pincode,
         total: data.total,
         userId: user.id,
@@ -157,6 +191,35 @@ export const updateStatus = async (id, status) => {
     error.code = 'INVALID_STATUS';
     throw error;
   }
+
+  // Get current order status
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) {
+    const error = new Error('Order not found');
+    error.statusCode = 404;
+    error.code = 'ORDER_NOT_FOUND';
+    throw error;
+  }
+
+  const currentStatus = order.status;
+
+  // Validate status transitions
+  const allowedTransitions = {
+    PENDING: ['CONFIRMED', 'CANCELLED'],
+    CONFIRMED: ['DELIVERED', 'CANCELLED'],
+    CANCELLED: [], // Final state
+    DELIVERED: [], // Final state
+  };
+
+  if (!allowedTransitions[currentStatus]?.includes(status)) {
+    const error = new Error(
+      `Cannot change status from ${currentStatus} to ${status}`
+    );
+    error.statusCode = 400;
+    error.code = 'INVALID_STATUS_TRANSITION';
+    throw error;
+  }
+
   return await orderRepository.updateStatus(id, status);
 };
 

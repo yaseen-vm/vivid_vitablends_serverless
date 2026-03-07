@@ -14,7 +14,7 @@ export const useProducts = (category?: string) => {
         setProducts(
           category ? data.filter((p) => p.category === category) : data
         );
-      } catch (err) {
+      } catch {
         toast.error("Failed to load products");
       } finally {
         setLoading(false);
@@ -35,7 +35,7 @@ export const useFeaturedProducts = () => {
       try {
         const data = await productApi.getFeatured();
         setProducts(data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load featured products");
       } finally {
         setLoading(false);
@@ -56,7 +56,7 @@ export const useCombos = () => {
       try {
         const data = await productApi.getCombos();
         setProducts(data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load combo offers");
       } finally {
         setLoading(false);

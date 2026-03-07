@@ -2,23 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { useCategories } from "@/hooks/useCategories";
 import { Category } from "@/types/Category";
 import categoryPickles from "@/assets/category-pickles.jpg";
-import categoryPowders from "@/assets/category-powders.jpg";
 
-const getCategoryImage = (categoryName: string) => {
-  const name = categoryName.toLowerCase();
-  if (name.includes("pickle")) return categoryPickles;
-  if (name.includes("powder") || name.includes("health"))
-    return categoryPowders;
-  return categoryPickles;
+const getCategoryImage = (category: Category) => {
+  return category.image || categoryPickles;
 };
 
-const getCategoryDescription = (categoryName: string) => {
-  const name = categoryName.toLowerCase();
-  if (name.includes("pickle")) return "Traditional recipes, bold flavors";
-  if (name.includes("powder") || name.includes("health"))
-    return "Nature's goodness, powdered";
-  if (name.includes("combo")) return "Bundle deals & savings";
-  return "Discover our collection";
+const getCategoryDescription = (category: Category) => {
+  return category.description || "Discover our collection";
 };
 
 const CategoryGrid = () => {
@@ -69,7 +59,7 @@ const CategoryGrid = () => {
               className="group relative h-[220px] md:h-[450px] overflow-hidden rounded-xl text-left"
             >
               <img
-                src={getCategoryImage(category.name)}
+                src={getCategoryImage(category)}
                 alt={category.name}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
@@ -85,7 +75,7 @@ const CategoryGrid = () => {
                 </h2>
 
                 <p className="mt-1 text-xs text-white/80 md:text-sm">
-                  {getCategoryDescription(category.name)}
+                  {getCategoryDescription(category)}
                 </p>
 
                 <span className="mt-2 inline-block text-xs font-semibold text-warm-gold transition-transform group-hover:translate-x-2 md:text-sm">

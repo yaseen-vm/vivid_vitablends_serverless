@@ -10,3 +10,8 @@ export const reviewSchema = z.object({
 export const reviewUpdateSchema = z.object({
   showInHero: z.boolean(),
 });
+
+export const reviewQuerySchema = z.object({
+  showInHero: z.enum(['true', 'false']).optional(),
+  limit: z.string().regex(/^\d+$/).optional(),
+});
