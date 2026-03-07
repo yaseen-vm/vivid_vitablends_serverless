@@ -64,7 +64,6 @@ export const ProductsManagement = () => {
     createProduct,
     updateProduct,
     deleteProduct,
-    createCategory,
   } = useAdminProducts();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
@@ -346,7 +345,6 @@ export const ProductsManagement = () => {
             onSubmit={handleSubmit}
             onCancel={() => setDialogOpen(false)}
             categories={categories}
-            onCreateCategory={createCategory}
           />
         </DialogContent>
       </Dialog>

@@ -76,6 +76,7 @@ export const update = async (id, data) => {
   }
 
   const updatedCategory = await categoryRepository.update(id, data);
-  logger.info('Category updated', { id, data });
+  const { image, ...safeData } = data;
+  logger.info('Category updated', { id, ...safeData, hasImage: !!image });
   return updatedCategory;
 };

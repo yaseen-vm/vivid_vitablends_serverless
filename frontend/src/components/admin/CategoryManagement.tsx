@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useCategories } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
-import { categoryApi } from "@/services/api/productApi";
+import { categoryApi } from "@/services/api/categoryApi";
 import { toast } from "sonner";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { z } from "zod";
 import {
   Card,
@@ -52,6 +52,7 @@ const CategoryManagement = () => {
   const queryClient = useQueryClient();
   const [updating, setUpdating] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -104,6 +105,15 @@ const CategoryManagement = () => {
     }
   };
 
+  const openCreateDialog = () => {
+    setCreatingCategory(true);
+    setFormData({
+      name: "",
+      description: "",
+      image: "",
+    });
+  };
+
   const openEditDialog = (category: Category) => {
     setEditingCategory(category);
     setFormData({
@@ -134,6 +144,29 @@ const CategoryManagement = () => {
       setFormData({ ...formData, image: reader.result as string });
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleCreate = async () => {
+    const validation = categoryUpdateSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
+    setUpdating("creating");
+    try {
+      await categoryApi.create(formData.name);
+      await queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category created successfully");
+      setCreatingCategory(false);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create category";
+      toast.error(message);
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const handleUpdate = async () => {
@@ -169,10 +202,17 @@ const CategoryManagement = () => {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Category Management</CardTitle>
-          <CardDescription>
-            Manage categories, their details, and homepage visibility
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Category Management</CardTitle>
+              <CardDescription>
+                Manage categories, their details, and homepage visibility
+              </CardDescription>
+            </div>
+            <Button onClick={openCreateDialog}>
+              <Plus className="mr-2 h-4 w-4" /> Add Category
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -276,6 +316,47 @@ const CategoryManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={creatingCategory}
+        onOpenChange={() => setCreatingCategory(false)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Category</DialogTitle>
+            <DialogDescription>
+              Enter category name to create a new category
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="create-name">Category Name *</Label>
+              <Input
+                id="create-name"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                placeholder="Enter category name"
+                maxLength={100}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreatingCategory(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={updating === "creating"}>
+              {updating === "creating" ? "Creating..." : "Create"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={!!editingCategory}
