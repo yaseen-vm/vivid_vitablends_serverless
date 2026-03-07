@@ -6,8 +6,8 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   // Load env vars from root directory
-  const env = loadEnv(mode, path.resolve(__dirname, '../'), '');
-  
+  loadEnv(mode, path.resolve(__dirname, "../"), "");
+
   return {
     server: {
       host: "::",
@@ -16,12 +16,14 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
-    plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+    plugins: [react(), mode === "development" && componentTagger()].filter(
+      Boolean
+    ),
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
     },
-    envDir: path.resolve(__dirname, '../'), // Look for .env files in root directory
+    envDir: path.resolve(__dirname, "../"), // Look for .env files in root directory
   };
 });
