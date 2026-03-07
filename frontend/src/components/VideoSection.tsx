@@ -14,6 +14,12 @@ const VideoSection = () => {
   const paraRef = useRef(null);
 
   useEffect(() => {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion) return;
+
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: sectionRef.current,
@@ -22,7 +28,6 @@ const VideoSection = () => {
       },
     });
 
-    // Video animation
     gsap.from(videoRef.current, {
       scale: 0.9,
       opacity: 0,
@@ -34,14 +39,12 @@ const VideoSection = () => {
       },
     });
 
-    // Text animations
     tl.from(labelRef.current, {
       scale: 0.6,
       opacity: 0,
       duration: 0.6,
       ease: "back.out(1.7)",
     })
-
       .from(
         headingRef.current,
         {
@@ -52,7 +55,6 @@ const VideoSection = () => {
         },
         "-=0.2"
       )
-
       .from(
         dividerRef.current,
         {
@@ -63,7 +65,6 @@ const VideoSection = () => {
         },
         "-=0.2"
       )
-
       .from(
         paraRef.current,
         {
@@ -91,6 +92,7 @@ const VideoSection = () => {
                 loop
                 muted
                 playsInline
+                aria-label="Product showcase video"
                 className="w-full h-[220px] md:h-[320px] lg:h-[500px] object-cover"
               />
             </div>
