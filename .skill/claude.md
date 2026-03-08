@@ -69,6 +69,7 @@ vivid_vitablends/
 ## Tech Stack
 
 ### Frontend
+
 - **Language**: TypeScript
 - **Framework**: React 18
 - **Build Tool**: Vite
@@ -79,6 +80,7 @@ vivid_vitablends/
 - **Testing**: Vitest + Testing Library
 
 ### Backend
+
 - **Language**: JavaScript (ES Modules)
 - **Runtime**: Node.js v18+
 - **Framework**: Express.js
@@ -93,6 +95,7 @@ vivid_vitablends/
 - **Security**: CORS, rate limiting, cookie-parser
 
 ### Infrastructure
+
 - **Containerization**: Docker + Docker Compose
 - **Reverse Proxy**: Nginx
 - **CI/CD**: GitHub Actions
@@ -103,6 +106,7 @@ vivid_vitablends/
 ### Code Style
 
 #### Backend (JavaScript)
+
 - Use ES6+ module syntax (`import`/`export`)
 - Use `async`/`await` over callbacks
 - Prefer arrow functions for inline callbacks
@@ -111,6 +115,7 @@ vivid_vitablends/
 - No semicolons (Prettier enforced)
 
 #### Frontend (TypeScript)
+
 - Strict TypeScript mode enabled
 - Define interfaces for all props and API responses
 - Use functional components with hooks (no class components)
@@ -121,6 +126,7 @@ vivid_vitablends/
 ### Naming Conventions
 
 #### Backend
+
 - **Files**: `kebab-case.js` (e.g., `product.service.js`)
 - **Classes**: `PascalCase` (rare, mostly functional)
 - **Functions**: `camelCase` (e.g., `getUserById`)
@@ -128,6 +134,7 @@ vivid_vitablends/
 - **Routes**: `/api/resource-name` (plural, kebab-case)
 
 #### Frontend
+
 - **Components**: `PascalCase.tsx` (e.g., `ProductCard.tsx`)
 - **Hooks**: `camelCase.ts` starting with `use` (e.g., `useProducts.ts`)
 - **Utilities**: `camelCase.ts` (e.g., `formatPrice.ts`)
@@ -147,14 +154,15 @@ vivid_vitablends/
 ### Error Handling Standards
 
 #### Backend
+
 ```javascript
 // Use try-catch in async functions
 try {
-  const result = await service.operation()
-  res.json({ success: true, data: result })
+  const result = await service.operation();
+  res.json({ success: true, data: result });
 } catch (error) {
-  logger.error('Operation failed', { error: error.message })
-  res.status(500).json({ success: false, error: 'Internal server error' })
+  logger.error("Operation failed", { error: error.message });
+  res.status(500).json({ success: false, error: "Internal server error" });
 }
 ```
 
@@ -164,13 +172,14 @@ try {
 - Use HTTP status codes correctly (400, 401, 403, 404, 500)
 
 #### Frontend
+
 ```typescript
 // Use TanStack Query error handling
 const { data, error, isLoading } = useQuery({
-  queryKey: ['products'],
+  queryKey: ["products"],
   queryFn: fetchProducts,
-  onError: (err) => toast.error('Failed to load products')
-})
+  onError: (err) => toast.error("Failed to load products"),
+});
 ```
 
 - Display user-friendly error messages
@@ -254,11 +263,13 @@ const { data, error, isLoading } = useQuery({
 ### Unit Testing
 
 #### Backend
+
 - Test services in isolation (mock repositories)
 - Test utilities (JWT, password hashing, image processing)
 - Coverage target: 70%+ for services and utilities
 
 #### Frontend
+
 - Test custom hooks with `@testing-library/react-hooks`
 - Test utility functions
 - Test form validation logic
@@ -298,37 +309,84 @@ const { data, error, isLoading } = useQuery({
 
 ### Pull Request Requirements
 
-1. **Pre-commit Hooks**: Run and pass all pre-commit hooks in both frontend and backend before creating PR
-   ```bash
-   # Backend
-   cd backend
-   npm run lint-staged
-   
-   # Frontend
-   cd frontend
-   npm run lint-staged
-   ```
+#### Pre-Commit Workflow
+
+Before committing any changes, follow this workflow:
+
+```bash
+# 1. Frontend - Lint and format
+cd frontend
+npm run lint
+npm run format
+npm run format:check
+
+# 2. Backend - Format
+cd ../backend
+npm run format
+npm run format:check
+
+# 3. Check git status and diff
+cd ..
+git status
+git diff
+
+# 4. Based on diff, create appropriate branch
+# For new features:
+git checkout -b feature/descriptive-name
+# For bug fixes:
+git checkout -b fix/descriptive-name
+# For hotfixes:
+git checkout -b hotfix/descriptive-name
+
+# 5. Stage and commit changes
+git add .
+git commit -m "type: clear and descriptive commit message"
+# Examples:
+# "feat: add product filtering by category"
+# "fix: resolve cart calculation error"
+# "chore: update dependencies"
+
+# 6. Push to origin
+git push origin <branch-name>
+
+# 7. Create PR description file
+# Create pr-description.md with:
+# - Summary of changes
+# - Related issue numbers
+# - Testing performed
+# - Screenshots (if UI changes)
+
+# 8. Create PR using GitHub CLI
+gh pr create --title "Title" --body-file pr-description.md
+```
+
+#### PR Checklist
+
+1. **Pre-commit Hooks**: Run and pass all linting/formatting in both frontend and backend
 2. **Code Review**: At least 1 approval required
 3. **CI Checks**: All GitHub Actions must pass
 4. **No Merge Conflicts**: Rebase on target branch
-5. **Description**: Clear description of changes
+5. **Description**: Clear description of changes in pr-description.md
 6. **Testing**: Evidence of testing (screenshots, test results)
 7. **Documentation**: Update README/docs if needed
 
 ### Deployment Expectations
 
 #### Development
+
 - Auto-deploy to dev environment on push to `develop`
 - Use `.env.example` as template
 - Docker Compose for local development
 
 #### Staging
+
 - Deploy from `develop` branch
 - Run full test suite
 - Manual QA testing
 - Performance testing
 
 #### Production
+
 - Deploy from `main` branch only
 - Require manual approval
 - Zero-downtime deployment (blue-green or rolling)
@@ -381,12 +439,14 @@ const { data, error, isLoading } = useQuery({
 ### Architectural Decisions
 
 When making significant changes, explain:
+
 1. **Why**: Rationale for the approach
 2. **Trade-offs**: What alternatives were considered
 3. **Impact**: How it affects performance, security, maintainability
 4. **Migration**: If breaking changes, provide migration path
 
 Example:
+
 ```
 // Decision: Using Redis for caching product lists
 // Why: Reduce database load, improve response times
@@ -398,6 +458,7 @@ Example:
 ### Code Review Checklist
 
 Before submitting code, verify:
+
 - [ ] Follows project structure and naming conventions
 - [ ] Includes proper error handling
 - [ ] No security vulnerabilities introduced
@@ -421,11 +482,11 @@ Before submitting code, verify:
 ```javascript
 // Good
 // Using bcrypt rounds=12 for OWASP compliance
-const hashedPassword = await bcrypt.hash(password, 12)
+const hashedPassword = await bcrypt.hash(password, 12);
 
 // Bad
 // Hash the password
-const hashedPassword = await bcrypt.hash(password, 12)
+const hashedPassword = await bcrypt.hash(password, 12);
 ```
 
 ### Function Documentation
@@ -447,6 +508,7 @@ async function createProduct(productData, imageFile) { ... }
 ### README Updates
 
 Update README.md when:
+
 - Adding new environment variables
 - Changing setup instructions
 - Adding new scripts or commands
@@ -516,17 +578,20 @@ Maintain a clear separation of concerns across all front-end layers.
 #### Single Responsibility Principle (SRP)
 
 Each component, hook, function, and module must have **one clear responsibility**:
+
 - No "smart components" doing multiple jobs
 - No mixed UI + business logic
 
 #### DRY Principle (Strict)
 
 **Zero duplication** across:
+
 - Components
 - Hooks
 - Services
 
 **Reuse**:
+
 - Existing hooks
 - Existing shared utilities
 - Existing base components
@@ -569,20 +634,24 @@ If logic already exists → **use it**. Copy-paste logic is **strictly forbidden
 ### 6. Performance & Production Readiness
 
 **Optimize for**:
+
 - Render performance
 - State updates
 - Network efficiency
 
 **No**:
+
 - Console logs
 - Debug code
 - Temporary workarounds
 
 **Avoid**:
+
 - Inline functions where unnecessary
 - Unmemoized expensive computations
 
 **No magic values**:
+
 - Use existing constants or configuration
 
 ### 7. Error Handling
@@ -650,23 +719,25 @@ All implementation must conform to these existing patterns **without exception**
 
 ```javascript
 // ES Modules — always
-import express from 'express';
+import express from "express";
 export default router;
 
 // Logger — only logging utility allowed
-import logger from '../utils/logger.js';
-logger.info('message', { metadata });
-logger.error('message', { error });
+import logger from "../utils/logger.js";
+logger.info("message", { metadata });
+logger.error("message", { error });
 
 // Config — never hardcode values
-import config from '../config/index.js';
+import config from "../config/index.js";
 
 // Prisma — one shared client instance
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // Middleware signature
-export const middleware = (req, res, next) => { next(); };
+export const middleware = (req, res, next) => {
+  next();
+};
 ```
 
 ### Architecture: Layered Responsibilities
@@ -675,21 +746,21 @@ Each layer has **exactly one job**. Violations of layer boundaries are bugs, not
 
 #### Layer Map
 
-| Layer | Location | Owns | Never Touches |
-|-------|----------|------|---------------|
-| **Routes** | `src/routes/` | Endpoint + method definition, middleware binding | Logic, validation, DB |
-| **Controllers** | `src/controllers/` | Request extraction, response formatting, error forwarding | Business logic, DB queries |
-| **Services** | `src/services/` | Business rules, validation, orchestration | HTTP objects, DB directly |
-| **Repositories** | `src/repositories/` | Prisma queries only | Business logic, orchestration |
-| **Middleware** | `src/middleware/` | Single cross-cutting concern per file | State, business logic |
-| **Utils** | `src/utils/` | Pure functions, no side effects | HTTP, DB, services |
-| **Config** | `src/config/` | All env vars and settings | Hardcoded values |
+| Layer            | Location            | Owns                                                      | Never Touches                 |
+| ---------------- | ------------------- | --------------------------------------------------------- | ----------------------------- |
+| **Routes**       | `src/routes/`       | Endpoint + method definition, middleware binding          | Logic, validation, DB         |
+| **Controllers**  | `src/controllers/`  | Request extraction, response formatting, error forwarding | Business logic, DB queries    |
+| **Services**     | `src/services/`     | Business rules, validation, orchestration                 | HTTP objects, DB directly     |
+| **Repositories** | `src/repositories/` | Prisma queries only                                       | Business logic, orchestration |
+| **Middleware**   | `src/middleware/`   | Single cross-cutting concern per file                     | State, business logic         |
+| **Utils**        | `src/utils/`        | Pure functions, no side effects                           | HTTP, DB, services            |
+| **Config**       | `src/config/`       | All env vars and settings                                 | Hardcoded values              |
 
 #### Canonical Examples
 
 ```javascript
 // routes/product.routes.js — endpoint definition only
-router.post('/products', authenticate, productController.create);
+router.post("/products", authenticate, productController.create);
 
 // controllers/product.controller.js — HTTP lifecycle only
 export const create = async (req, res, next) => {
@@ -750,9 +821,9 @@ Services throw. Controllers catch and forward. The global error handler resolves
 // Service — throw with context
 if (!product) {
   logger.warn('Product not found', { id });
-  throw Object.assign(new Error('Product not found'), { 
-    statusCode: 404, 
-    code: 'PRODUCT_NOT_FOUND' 
+  throw Object.assign(new Error('Product not found'), {
+    statusCode: 404,
+    code: 'PRODUCT_NOT_FOUND'
   });
 }
 
@@ -772,7 +843,8 @@ export const errorHandler = (err, req, res, next) => {
 };
 ```
 
-**Rules**: 
+**Rules**:
+
 - No try/catch in repositories — let errors propagate
 - No custom error classes unless one already exists in the codebase
 
@@ -786,7 +858,7 @@ export const createProductService = ({ productRepository }) => ({
   create: async (data) => {
     validateProduct(data);
     return productRepository.create(data);
-  }
+  },
 });
 
 // This makes mocking trivial
@@ -794,6 +866,7 @@ const service = createProductService({ productRepository: mockRepo });
 ```
 
 Each feature must support:
+
 - Unit tests on services with mocked repositories
 - Controller tests with mocked services
 - Integration tests on routes
@@ -805,29 +878,36 @@ Each feature must support:
 Submit a plan covering **all** of the following. No partial plans accepted.
 
 **Files**
+
 - New files with full paths
 - Existing files to modify and why
 
 **API Specification**
+
 - Endpoint paths, HTTP methods
 - Request body
 - Success response
 - Error responses
 
 **Data Flow**
+
 - Route → Controller → Service → Repository → DB (one line per hop)
 
 **Database Changes**
+
 - Prisma model additions/modifications
 - Relations and index considerations
 
 **Validation Strategy**
+
 - What is validated, where, and what error is thrown on failure
 
 **Logging Strategy**
+
 - What events are logged, at what level (info, warn, error), and with what metadata
 
 **Performance Considerations**
+
 - Query optimization approach
 - Any pagination, filtering, or caching patterns needed
 

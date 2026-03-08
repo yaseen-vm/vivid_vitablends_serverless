@@ -23,7 +23,8 @@ export const uploadImage = async (base64Image, fileName) => {
   const base64Data = matches[2];
   const buffer = Buffer.from(base64Data, 'base64');
 
-  const key = `products/${Date.now()}-${crypto.randomBytes(8).toString('hex')}.jpg`;
+  const folder = fileName.startsWith('category-') ? 'categories' : 'products';
+  const key = `${folder}/${Date.now()}-${crypto.randomBytes(8).toString('hex')}.jpg`;
 
   await s3Client.send(
     new PutObjectCommand({

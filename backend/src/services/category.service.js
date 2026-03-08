@@ -1,4 +1,5 @@
 import * as categoryRepository from '../repositories/category.repository.js';
+import { uploadImage } from '../utils/r2.js';
 import logger from '../utils/logger.js';
 
 export const create = async (data) => {
@@ -73,6 +74,12 @@ export const update = async (id, data) => {
         code: 'CATEGORY_EXISTS',
       });
     }
+  }
+
+  // Upload image to R2 if base64 provided
+  if (data.image && data.image.startsWith('data:image/')) {
+    const fileName = `category-${id}`;
+    data.image = await uploadImage(data.image, fileName);
   }
 
   const updatedCategory = await categoryRepository.update(id, data);
