@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const validate = (schema) => {
   return (req, res, next) => {
     try {
-      schema.parse(req.body);
+      req.body = schema.parse(req.body);
       next();
     } catch (error) {
       logger.warn('Validation failed', {
@@ -25,7 +25,7 @@ export const validate = (schema) => {
 export const validateQuery = (schema) => {
   return (req, res, next) => {
     try {
-      schema.parse(req.query);
+      req.query = schema.parse(req.query);
       next();
     } catch (error) {
       logger.warn('Query validation failed', {
@@ -46,7 +46,7 @@ export const validateQuery = (schema) => {
 export const validateParam = (paramName, schema) => {
   return (req, res, next) => {
     try {
-      schema.parse(req.params[paramName]);
+      req.params[paramName] = schema.parse(req.params[paramName]);
       next();
     } catch (error) {
       logger.warn('Param validation failed', {
