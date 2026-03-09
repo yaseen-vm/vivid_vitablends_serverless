@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import * as orderRepository from '../repositories/order.repository.js';
 import prisma from '../utils/prisma.js';
 import logger from '../utils/logger.js';
@@ -83,7 +84,7 @@ const validateOrderData = (data) => {
 };
 
 const generateOrderId = () => {
-  const randomNum = Math.floor(100000 + Math.random() * 900000);
+  const randomNum = crypto.randomInt(100000, 1000000);
   return `VV-${randomNum}`;
 };
 
