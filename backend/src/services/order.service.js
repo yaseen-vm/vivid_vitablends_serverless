@@ -93,15 +93,15 @@ export const create = async (data) => {
   validateOrderData(data);
 
   return await prisma.$transaction(async (tx) => {
-    // Verify all products exist
+    // Verify all products exist and get their prices
     const productIds = data.items.map((item) => item.productId);
     const products = await tx.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true },
+      select: { id: true, price: true, name: true },
     });
 
-    const foundIds = new Set(products.map((p) => p.id));
-    const missingIds = productIds.filter((id) => !foundIds.has(id));
+    const productMap = new Map(products.map((p) => [p.id, p]));
+    const missingIds = productIds.filter((id) => !productMap.has(id));
 
     if (missingIds.length > 0) {
       logger.warn('Order validation failed - invalid products', { missingIds });
@@ -114,6 +114,42 @@ export const create = async (data) => {
             message: `Invalid product IDs: ${missingIds.join(', ')}`,
           },
         ],
+      });
+    }
+
+    // Recalculate and validate prices/total
+    let calculatedTotal = 0;
+    const verifiedItems = data.items.map((item) => {
+      const dbProduct = productMap.get(item.productId);
+      const itemTotal = dbProduct.price * item.quantity;
+      calculatedTotal += itemTotal;
+
+      // Optional: Check if price matches (useful for detecting manipulation attempts)
+      if (Math.abs(item.price - dbProduct.price) > 0.01) {
+        logger.warn('Price mismatch detected', {
+          productId: item.productId,
+          clientPrice: item.price,
+          dbPrice: dbProduct.price,
+        });
+      }
+
+      return {
+        productId: item.productId,
+        name: dbProduct.name, // Use DB name to be safe
+        quantity: item.quantity,
+        price: dbProduct.price, // Use DB price for final order
+      };
+    });
+
+    // Validate total (allowing for small rounding differences in floats)
+    if (Math.abs(calculatedTotal - data.total) > 0.01) {
+      logger.error('Order total mismatch', {
+        clientTotal: data.total,
+        calculatedTotal,
+      });
+      throw Object.assign(new Error('Order total mismatch'), {
+        statusCode: 400,
+        code: 'PRICE_MISMATCH',
       });
     }
 
@@ -154,8 +190,8 @@ export const create = async (data) => {
     logger.info('Creating order', {
       orderId,
       userId: user.id,
-      total: data.total,
-      itemCount: data.items.length,
+      total: calculatedTotal,
+      itemCount: verifiedItems.length,
     });
 
     return await tx.order.create({
@@ -168,10 +204,10 @@ export const create = async (data) => {
         city: data.city,
         state: data.state,
         pincode: data.pincode,
-        total: data.total,
+        total: calculatedTotal,
         userId: user.id,
         items: {
-          create: data.items,
+          create: verifiedItems,
         },
       },
       include: {

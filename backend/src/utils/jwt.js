@@ -10,13 +10,17 @@ const getEnvVar = (key, defaultValue) => {
   if (typeof process !== 'undefined' && process.env && process.env[key]) {
     return process.env[key];
   }
+
+  if (defaultValue === undefined) {
+    throw new Error(`Environment variable ${key} is required`);
+  }
+
   return defaultValue;
 };
 
-const getSecret = () =>
-  new TextEncoder().encode(getEnvVar('JWT_SECRET', 'secret'));
+const getSecret = () => new TextEncoder().encode(getEnvVar('JWT_SECRET'));
 const getRefreshSecret = () =>
-  new TextEncoder().encode(getEnvVar('JWT_REFRESH_SECRET', 'refresh_secret'));
+  new TextEncoder().encode(getEnvVar('JWT_REFRESH_SECRET'));
 
 export const generateToken = async (payload) => {
   return await new SignJWT(payload)
