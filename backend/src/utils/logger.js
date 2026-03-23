@@ -1,21 +1,24 @@
-import winston from 'winston';
+import log from 'loglevel';
+import config from '../config/index.js';
 
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => {
-          return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
-        })
-      ),
-    }),
-  ],
-});
+// Set default log level based on environment
+const level = config.nodeEnv === 'production' ? 'warn' : 'info';
+log.setLevel(level);
+
+// Create a wrapper to match the previous Winston API
+const logger = {
+  info: (message, meta = {}) => {
+    log.info(message, Object.keys(meta).length ? meta : '');
+  },
+  warn: (message, meta = {}) => {
+    log.warn(message, Object.keys(meta).length ? meta : '');
+  },
+  error: (message, meta = {}) => {
+    log.error(message, Object.keys(meta).length ? meta : '');
+  },
+  debug: (message, meta = {}) => {
+    log.debug(message, Object.keys(meta).length ? meta : '');
+  },
+};
 
 export default logger;

@@ -1,9 +1,9 @@
-import express from 'express';
+import { Hono } from 'hono';
 
-const router = express.Router();
+const router = new Hono();
 
-router.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+router.get('/health', (c) => {
+  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 export default router;

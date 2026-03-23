@@ -1,24 +1,24 @@
 import * as comingSoonService from '../services/comingSoon.service.js';
 import logger from '../utils/logger.js';
 
-export const getAll = async (req, res, next) => {
+export const getAll = async (c) => {
   try {
     logger.info('Fetching all coming soon products');
     const products = await comingSoonService.getAll();
-    res.status(200).json({ success: true, data: products });
+    return c.json({ success: true, data: products }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-export const addOrRemove = async (req, res, next) => {
+export const addOrRemove = async (c) => {
   try {
     logger.info('Add or remove coming soon product request', {
-      hasId: !!req.body.id,
+      hasId: !!(await c.req.json()).id,
     });
-    const result = await comingSoonService.addOrRemove(req.body);
-    res.status(200).json({ success: true, data: result });
+    const result = await comingSoonService.addOrRemove(await c.req.json());
+    return c.json({ success: true, data: result }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };

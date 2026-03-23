@@ -1,4 +1,4 @@
-import express from 'express';
+import { Hono } from 'hono';
 import * as messageController from '../controllers/message.controller.js';
 import rateLimiter from '../middleware/rateLimiter.js';
 import { validate } from '../middleware/validate.js';
@@ -6,7 +6,7 @@ import { messageSchema } from '../schemas/message.schema.js';
 import { authenticate } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
 
-const router = express.Router();
+const router = new Hono();
 
 router.post(
   '/',

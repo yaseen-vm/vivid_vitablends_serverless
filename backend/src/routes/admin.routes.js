@@ -1,11 +1,11 @@
-import express from 'express';
+import { Hono } from 'hono';
 import * as adminController from '../controllers/admin.controller.js';
 import rateLimiter from '../middleware/rateLimiter.js';
 import { validate } from '../middleware/validate.js';
 import { loginSchema, refreshSchema } from '../schemas/admin.schema.js';
 import { authenticate } from '../middleware/auth.js';
 
-const router = express.Router();
+const router = new Hono();
 
 router.post(
   '/login',

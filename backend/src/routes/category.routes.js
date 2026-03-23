@@ -1,4 +1,4 @@
-import express from 'express';
+import { Hono } from 'hono';
 import * as categoryController from '../controllers/category.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { requireAdmin } from '../middleware/adminAuth.js';
@@ -10,7 +10,7 @@ import {
   categoryHomepageSchema,
 } from '../schemas/category.schema.js';
 
-const router = express.Router();
+const router = new Hono();
 
 router.post(
   '/',

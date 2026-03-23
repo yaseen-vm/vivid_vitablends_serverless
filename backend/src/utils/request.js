@@ -1,11 +1,16 @@
+import { setCookie, deleteCookie } from 'hono/cookie';
 import config from '../config/index.js';
 
-export const getDeviceInfo = (req) => {
-  return req.headers['user-agent'] || 'Unknown';
+export const getDeviceInfo = (c) => {
+  return c.req.header('user-agent') || 'Unknown';
 };
 
-export const getIpAddress = (req) => {
-  return req.headers['x-forwarded-for']?.split(',')[0] || req.ip || 'Unknown';
+export const getIpAddress = (c) => {
+  return (
+    c.req.header('x-forwarded-for')?.split(',')[0] ||
+    c.req.header('cf-connecting-ip') ||
+    'Unknown'
+  );
 };
 
 const getCookieOptions = () => ({
@@ -15,13 +20,13 @@ const getCookieOptions = () => ({
   path: '/',
 });
 
-export const setRefreshTokenCookie = (res, refreshToken) => {
-  res.cookie(config.refreshTokenCookieName, refreshToken, {
+export const setRefreshTokenCookie = (c, refreshToken) => {
+  setCookie(c, config.refreshTokenCookieName, refreshToken, {
     ...getCookieOptions(),
-    maxAge: config.refreshTokenCookieMaxAge,
+    maxAge: Math.floor(config.refreshTokenCookieMaxAge / 1000), // Hono maxAge is in seconds
   });
 };
 
-export const clearRefreshTokenCookie = (res) => {
-  res.clearCookie(config.refreshTokenCookieName, getCookieOptions());
+export const clearRefreshTokenCookie = (c) => {
+  deleteCookie(c, config.refreshTokenCookieName, getCookieOptions());
 };

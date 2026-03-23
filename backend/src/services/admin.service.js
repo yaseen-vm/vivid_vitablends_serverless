@@ -45,9 +45,9 @@ export const createAdminService = ({ adminRepository, sessionRepository }) => ({
       role: admin.role,
     };
 
-    const token = generateToken(payload);
-    const refreshToken = generateRefreshToken(payload);
-    const refreshTokenHash = hashToken(refreshToken);
+    const token = await generateToken(payload);
+    const refreshToken = await generateRefreshToken(payload);
+    const refreshTokenHash = await hashToken(refreshToken);
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
@@ -84,8 +84,8 @@ export const createAdminService = ({ adminRepository, sessionRepository }) => ({
       });
     }
 
-    const decoded = verifyRefreshToken(refreshToken);
-    const refreshTokenHash = hashToken(refreshToken);
+    const decoded = await verifyRefreshToken(refreshToken);
+    const refreshTokenHash = await hashToken(refreshToken);
 
     const session = await sessionRepository.findByTokenHash(refreshTokenHash);
 
@@ -114,9 +114,9 @@ export const createAdminService = ({ adminRepository, sessionRepository }) => ({
       role: session.admin.role,
     };
 
-    const token = generateToken(payload);
-    const newRefreshToken = generateRefreshToken(payload);
-    const newRefreshTokenHash = hashToken(newRefreshToken);
+    const token = await generateToken(payload);
+    const newRefreshToken = await generateRefreshToken(payload);
+    const newRefreshTokenHash = await hashToken(newRefreshToken);
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -142,7 +142,7 @@ export const createAdminService = ({ adminRepository, sessionRepository }) => ({
     logger.info('Logout attempt');
 
     if (refreshToken) {
-      const refreshTokenHash = hashToken(refreshToken);
+      const refreshTokenHash = await hashToken(refreshToken);
       await sessionRepository.deleteSession(refreshTokenHash).catch((err) => {
         logger.debug('Session already deleted or not found', {
           error: err.message,

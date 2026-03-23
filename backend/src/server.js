@@ -1,12 +1,11 @@
-import './loadEnv.js';
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { secureHeaders } from 'hono/secure-headers';
+import { logger as honoLogger } from 'hono/logger';
 import config from './config/index.js';
 import logger from './utils/logger.js';
-import { initRedis } from './utils/redis.js';
 import { requestLogger } from './middleware/requestLogger.js';
+
 import healthRoutes from './routes/health.js';
 import adminRoutes from './routes/admin.routes.js';
 import productRoutes from './routes/product.routes.js';
@@ -16,21 +15,17 @@ import messageRoutes from './routes/message.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import comingSoonRoutes from './routes/comingSoon.routes.js';
 
-const app = express();
+const app = new Hono();
 
-initRedis().catch((err) => {
-  logger.error('Redis initialization failed, continuing without cache', err);
-});
-
+app.use('*', honoLogger());
 app.use(
-  helmet({
+  '*',
+  secureHeaders({
     contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", 'data:', 'https://pub-*.r2.dev'],
-      },
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https://pub-*.r2.dev'],
     },
     hsts: {
       maxAge: 31536000,
@@ -40,55 +35,59 @@ app.use(
   })
 );
 
-initRedis().catch((err) => {
-  logger.error('Redis initialization failed, continuing without cache', err);
-});
-
-app.set('etag', false);
 app.use(
+  '*',
   cors({
-    origin: (origin, callback) => {
+    origin: (origin) => {
       const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim());
-
-      // Block wildcard in production
       if (allowedOrigins.includes('*') && config.nodeEnv === 'production') {
-        logger.error('CORS wildcard not allowed in production');
-        return callback(new Error('Invalid CORS configuration'));
+        return null;
       }
-
       if (
         !origin ||
         allowedOrigins.includes('*') ||
         allowedOrigins.includes(origin)
       ) {
-        callback(null, true);
-      } else {
-        logger.warn('CORS origin rejected', { origin, allowedOrigins });
-        callback(new Error('Not allowed by CORS'));
+        return origin;
       }
+      return null;
     },
     credentials: true,
   })
 );
-app.use(express.json({ limit: '10mb' }));
-app.use(cookieParser());
-app.use(requestLogger);
 
-app.use('/api', healthRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/coming-soon', comingSoonRoutes);
-app.use('/', healthRoutes);
+app.use('*', requestLogger);
 
-app.use((err, req, res, next) => {
+// Initialize Prisma D1 Adapter per request using context
+import { PrismaClient } from '@prisma/client';
+import { PrismaD1 } from '@prisma/adapter-d1';
+import { prismaContext } from './utils/prisma.js';
+import { honoContext } from './utils/context.js';
+
+app.use('*', async (c, next) => {
+  if (c.env?.DB) {
+    const adapter = new PrismaD1(c.env.DB);
+    const prisma = new PrismaClient({ adapter });
+    return honoContext.run(c, () => prismaContext.run(prisma, () => next()));
+  }
+  return honoContext.run(c, () => next());
+});
+
+app.route('/api', healthRoutes);
+app.route('/api/admin', adminRoutes);
+app.route('/api/products', productRoutes);
+app.route('/api/reviews', reviewRoutes);
+app.route('/api/orders', orderRoutes);
+app.route('/api/messages', messageRoutes);
+app.route('/api/categories', categoryRoutes);
+app.route('/api/coming-soon', comingSoonRoutes);
+app.route('/', healthRoutes);
+
+app.onError((err, c) => {
   logger.error('Request failed', {
     error: err.message,
     stack: err.stack,
-    path: req.path,
+    path: c.req.path,
   });
 
   const message =
@@ -96,16 +95,15 @@ app.use((err, req, res, next) => {
       ? 'An error occurred'
       : err.message;
 
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message,
-    code: err.code || 'INTERNAL_ERROR',
-    ...(err.errors && { errors: err.errors }),
-  });
-});
-
-app.listen(config.port, () => {
-  logger.info(
-    `Server running on port ${config.port} in ${config.nodeEnv} mode`
+  return c.json(
+    {
+      success: false,
+      message,
+      code: err.code || 'INTERNAL_ERROR',
+      ...(err.errors && { errors: err.errors }),
+    },
+    err.statusCode || 500
   );
 });
+
+export default app;

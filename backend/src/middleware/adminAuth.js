@@ -1,24 +1,29 @@
 import logger from '../utils/logger.js';
 
-export const requireAdmin = (req, res, next) => {
-  try {
-    if (!req.user) {
-      throw Object.assign(new Error('Authentication required'), {
-        statusCode: 401,
+export const requireAdmin = async (c, next) => {
+  const user = c.get('user');
+  if (!user) {
+    return c.json(
+      {
+        success: false,
+        message: 'Authentication required',
         code: 'AUTH_REQUIRED',
-      });
-    }
-
-    if (req.user.role !== 'admin') {
-      logger.warn('Unauthorized admin access attempt', { userId: req.user.id });
-      throw Object.assign(new Error('Admin access required'), {
-        statusCode: 403,
-        code: 'ADMIN_REQUIRED',
-      });
-    }
-
-    next();
-  } catch (error) {
-    next(error);
+      },
+      401
+    );
   }
+
+  if (user.role !== 'admin') {
+    logger.warn('Unauthorized admin access attempt', { userId: user.id });
+    return c.json(
+      {
+        success: false,
+        message: 'Admin access required',
+        code: 'ADMIN_REQUIRED',
+      },
+      403
+    );
+  }
+
+  await next();
 };

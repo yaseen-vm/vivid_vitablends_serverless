@@ -1,4 +1,4 @@
-import express from 'express';
+import { Hono } from 'hono';
 import * as reviewController from '../controllers/review.controller.js';
 import { cache } from '../middleware/cache.js';
 import { authenticate } from '../middleware/auth.js';
@@ -10,7 +10,7 @@ import {
   reviewQuerySchema,
 } from '../schemas/review.schema.js';
 
-const router = express.Router();
+const router = new Hono();
 
 router.get(
   '/',

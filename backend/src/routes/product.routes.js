@@ -1,4 +1,4 @@
-import express from 'express';
+import { Hono } from 'hono';
 import * as productController from '../controllers/product.controller.js';
 import { cache } from '../middleware/cache.js';
 import { authenticate } from '../middleware/auth.js';
@@ -10,7 +10,7 @@ import {
   productQuerySchema,
 } from '../schemas/product.schema.js';
 
-const router = express.Router();
+const router = new Hono();
 
 router.get('/featured', cache(300), productController.getFeatured);
 router.get('/combos', cache(300), productController.getCombos);

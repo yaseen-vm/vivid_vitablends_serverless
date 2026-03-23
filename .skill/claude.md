@@ -12,16 +12,16 @@ The application is built with modern web technologies, containerized with Docker
 
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
-│   React SPA     │─────▶│  Express API    │─────▶│   PostgreSQL    │
-│  (Frontend)     │      │   (Backend)     │      │   (Database)    │
+│   React SPA     │─────▶│ Cloudflare      │─────▶│ Cloudflare D1   │
+│  (Frontend)     │      │ Worker (Hono)   │      │ (SQLite DB)     │
 └─────────────────┘      └─────────────────┘      └─────────────────┘
         │                        │                         │
         │                        ├──────────────────┐      │
         │                        │                  │      │
         ▼                        ▼                  ▼      ▼
 ┌─────────────────┐      ┌─────────────────┐  ┌──────────────┐
-│     Nginx       │      │   Redis Cache   │  │  AWS S3/R2   │
-│  (Production)   │      │   (Sessions)    │  │   (Images)   │
+│     Nginx       │      │ Cloudflare KV   │  │ Cloudflare R2│
+│  (Legacy Proxy) │      │ (Cache/Rates)   │  │   (Images)   │
 └─────────────────┘      └─────────────────┘  └──────────────┘
 ```
 
@@ -82,17 +82,16 @@ vivid_vitablends/
 ### Backend
 
 - **Language**: JavaScript (ES Modules)
-- **Runtime**: Node.js v18+
-- **Framework**: Express.js
-- **ORM**: Prisma
-- **Database**: PostgreSQL
-- **Cache**: Redis
-- **Authentication**: JWT (access + refresh tokens)
+- **Runtime**: Cloudflare Workers (V8 Edge Environment)
+- **Framework**: Hono
+- **ORM**: Prisma (with `@prisma/adapter-d1`)
+- **Database**: Cloudflare D1 (Serverless SQLite)
+- **Cache & Limits**: Cloudflare KV
+- **Authentication**: JWT via `jose` (Web Crypto API)
 - **Password Hashing**: bcryptjs
-- **Image Processing**: Sharp
-- **Storage**: AWS S3 / Cloudflare R2
-- **Logging**: Winston
-- **Security**: CORS, rate limiting, cookie-parser
+- **Storage**: Cloudflare R2 (Native Bindings)
+- **Logging**: Winston / Native Console
+- **Security**: CORS, rate limiting via KV
 
 ### Infrastructure
 
@@ -233,11 +232,10 @@ const { data, error, isLoading } = useQuery({
 - **Database Indexing**: Index foreign keys, frequently queried fields
 - **Query Optimization**: Use Prisma `select` to fetch only needed fields
 - **Caching Strategy**:
-  - Cache product lists (Redis, 5min TTL)
-  - Cache reviews (Redis, 10min TTL)
+  - Cache product lists (Cloudflare KV, 5min TTL)
+  - Cache reviews (Cloudflare KV, 10min TTL)
   - Invalidate cache on updates
-- **Connection Pooling**: Prisma handles connection pooling
-- **Image Optimization**: Resize/compress images with Sharp before upload
+- **Image Optimization**: Cloudflare Image Resizing handles optimization on the edge
 - **Pagination**: Implement cursor-based pagination for large datasets
 
 ### Frontend Optimization
@@ -394,11 +392,16 @@ gh pr create --title "Title" --body-file pr-description.md
 - Rollback plan ready
 - Monitor logs and metrics post-deployment
 
-### Environment Variables
+### Environment Variables & Bindings
 
-- **Development**: `.env` (local, not committed)
-- **Staging**: Set in CI/CD secrets
-- **Production**: Set in CI/CD secrets or secret manager
+- **Development**: `.env` (local, not committed) and `wrangler.toml` (for local bindings)
+- **Staging/Production**: Secrets set via `wrangler secret put` and bindings in `wrangler.toml`
+- **Required Secrets**:
+  - `JWT_SECRET`, `JWT_REFRESH_SECRET`
+- **Required Bindings**:
+  - `DB` (Cloudflare D1)
+  - `KV` (Cloudflare KV)
+  - `R2_BUCKET` (Cloudflare R2)
 - **Never**: Commit `.env` files to Git
 
 ## AI Agent Rules
@@ -719,8 +722,8 @@ All implementation must conform to these existing patterns **without exception**
 
 ```javascript
 // ES Modules — always
-import express from "express";
-export default router;
+import { Hono } from "hono";
+const app = new Hono();
 
 // Logger — only logging utility allowed
 import logger from "../utils/logger.js";
@@ -730,13 +733,12 @@ logger.error("message", { error });
 // Config — never hardcode values
 import config from "../config/index.js";
 
-// Prisma — one shared client instance
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+// Prisma — injected via AsyncLocalStorage Context from Hono
+import prisma from "../utils/prisma.js";
 
-// Middleware signature
-export const middleware = (req, res, next) => {
-  next();
+// Middleware signature (Hono)
+export const middleware = async (c, next) => {
+  await next();
 };
 ```
 
@@ -753,7 +755,7 @@ Each layer has **exactly one job**. Violations of layer boundaries are bugs, not
 | **Services**     | `src/services/`     | Business rules, validation, orchestration                 | HTTP objects, DB directly     |
 | **Repositories** | `src/repositories/` | Prisma queries only                                       | Business logic, orchestration |
 | **Middleware**   | `src/middleware/`   | Single cross-cutting concern per file                     | State, business logic         |
-| **Utils**        | `src/utils/`        | Pure functions, no side effects                           | HTTP, DB, services            |
+| **Utils**        | `src/utils/`        | Helpers (context, image format, caching interfaces)       | HTTP, DB, services            |
 | **Config**       | `src/config/`       | All env vars and settings                                 | Hardcoded values              |
 
 #### Canonical Examples
@@ -763,12 +765,12 @@ Each layer has **exactly one job**. Violations of layer boundaries are bugs, not
 router.post("/products", authenticate, productController.create);
 
 // controllers/product.controller.js — HTTP lifecycle only
-export const create = async (req, res, next) => {
+export const create = async (c) => {
   try {
-    const result = await productService.create(req.body);
-    res.status(201).json(result);
+    const result = await productService.create(await c.req.json());
+    return c.json(result, 201);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
@@ -779,6 +781,8 @@ export const create = async (data) => {
 };
 
 // repositories/product.repository.js — data access only
+import prisma from "../utils/prisma.js";
+
 export const create = async (data) => {
   return prisma.product.create({ data });
 };
@@ -829,18 +833,18 @@ if (!product) {
 
 // Controller — forward only
 } catch (error) {
-  next(error); // never res.json() an error here
+  throw error; // never c.json() an error here
 }
 
 // Global error middleware — single resolution point
-export const errorHandler = (err, req, res, next) => {
-  logger.error('Request failed', { error: err, path: req.path });
-  res.status(err.statusCode ?? 500).json({
+app.onError((err, c) => {
+  logger.error('Request failed', { error: err, path: c.req.path });
+  return c.json({
     success: false,
     message: err.message ?? 'Internal server error',
     code: err.code ?? 'INTERNAL_ERROR'
-  });
-};
+  }, err.statusCode ?? 500);
+});
 ```
 
 **Rules**:

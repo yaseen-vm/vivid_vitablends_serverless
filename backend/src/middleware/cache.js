@@ -1,73 +1,59 @@
-import redisClient from '../utils/redis.js';
-import config from '../config/index.js';
-import logger from '../utils/logger.js';
+import { getHonoContext } from '../utils/context.js';
 
-export const cache = (ttl = config.redisTtl) => {
-  return async (req, res, next) => {
-    if (!config.redisEnabled || !redisClient) {
-      return next();
+export const cache = (ttl = 3600) => {
+  return async (c, next) => {
+    if (!c.env.KV) {
+      return await next();
     }
 
-    const key = `cache:${req.method}:${req.originalUrl}`;
+    const url = new URL(c.req.url);
+    const key = `cache:${c.req.method}:${url.pathname}${url.search}`;
 
     try {
-      const cached = await redisClient.get(key);
+      const cached = await c.env.KV.get(key);
       if (cached) {
-        logger.info('Cache HIT', { key });
-        res.setHeader('X-Cache', 'HIT');
-        return res.json(JSON.parse(cached));
+        c.header('X-Cache', 'HIT');
+        return c.json(JSON.parse(cached));
       }
 
-      logger.info('Cache MISS', { key });
-      res.setHeader('X-Cache', 'MISS');
+      c.header('X-Cache', 'MISS');
 
-      res.sendResponse = res.json;
-      res.json = async (body) => {
-        try {
-          await redisClient.setEx(key, ttl, JSON.stringify(body));
-        } catch (err) {
-          logger.error('Redis setEx cache error', { key, error: err });
-        }
-        res.sendResponse(body);
-      };
+      await next();
 
-      next();
+      if (c.res.ok) {
+        // Clone response to read body for caching
+        const clonedRes = c.res.clone();
+        const body = await clonedRes.text();
+        const expirationTtl = Math.max(60, ttl);
+        c.executionCtx.waitUntil(
+          c.env.KV.put(key, body, { expirationTtl }).catch(console.error)
+        );
+      }
     } catch (err) {
-      logger.error('Redis cache error', err);
-      next();
+      console.error('KV cache error', err);
+      await next();
     }
   };
 };
 
-export const clearCache = async (pattern = '*') => {
-  if (!config.redisEnabled || !redisClient) {
-    return;
-  }
+export const clearCache = async (pattern = '') => {
+  const c = getHonoContext();
+  if (!c || !c.env.KV) return;
 
   try {
-    let cursor = 0;
-    let totalDeleted = 0;
-    const matchPattern = `cache:${pattern}`;
+    const prefix = `cache:${pattern}`;
+    let listComplete = false;
+    let cursor = undefined;
 
-    do {
-      // Use SCAN to iterate over keys matching the cache pattern in a non-blocking way
-      const [nextCursor, foundKeys] = await redisClient.scan(cursor, {
-        MATCH: matchPattern,
-        COUNT: 100,
-      });
-
-      cursor = Number(nextCursor);
-
-      if (Array.isArray(foundKeys) && foundKeys.length > 0) {
-        await redisClient.del(foundKeys);
-        totalDeleted += foundKeys.length;
+    while (!listComplete) {
+      const list = await c.env.KV.list({ prefix, cursor });
+      for (const key of list.keys) {
+        await c.env.KV.delete(key.name);
       }
-    } while (cursor !== 0);
-
-    if (totalDeleted > 0) {
-      logger.info('Cache cleared', { pattern, count: totalDeleted });
+      listComplete = list.list_complete;
+      cursor = list.cursor;
     }
   } catch (err) {
-    logger.error('Redis clear cache error', err);
+    console.error('KV clear cache error', err);
   }
 };

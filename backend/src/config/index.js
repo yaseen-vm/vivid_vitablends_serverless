@@ -1,25 +1,74 @@
+import { getHonoContext } from '../utils/context.js';
+
+const getEnv = (key, fallback) => {
+  const c = getHonoContext();
+  if (c && c.env && c.env[key] !== undefined) {
+    return c.env[key];
+  }
+  return fallback;
+};
+
 export default {
-  port: process.env.PORT || 5000,
-  nodeEnv: process.env.NODE_ENV || 'development',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:8081',
-  jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
-  jwtRefreshSecret:
-    process.env.JWT_REFRESH_SECRET ||
-    'your-refresh-secret-key-change-in-production',
-  jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  get port() {
+    return getEnv('PORT', 5000);
+  },
+  get nodeEnv() {
+    return getEnv('NODE_ENV', 'development');
+  },
+  get corsOrigin() {
+    return getEnv(
+      'CORS_ORIGIN',
+      'http://localhost:8081,https://vivid-vitablends-frontend-prod.pages.dev'
+    );
+  },
+  get jwtSecret() {
+    return getEnv('JWT_SECRET', 'your-secret-key-change-in-production');
+  },
+  get jwtExpiresIn() {
+    return getEnv('JWT_EXPIRES_IN', '15m');
+  },
+  get jwtRefreshSecret() {
+    return getEnv(
+      'JWT_REFRESH_SECRET',
+      'your-refresh-secret-key-change-in-production'
+    );
+  },
+  get jwtRefreshExpiresIn() {
+    return getEnv('JWT_REFRESH_EXPIRES_IN', '7d');
+  },
+
   refreshTokenCookieName: 'refreshToken',
   refreshTokenCookieMaxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-  redisEnabled: process.env.REDIS_ENABLED === 'true',
-  redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
-  redisPassword: process.env.REDIS_PASSWORD || '',
-  redisTtl: parseInt(process.env.REDIS_TTL || '3600', 10),
+
+  get redisEnabled() {
+    return getEnv('REDIS_ENABLED', 'true') === 'true';
+  },
+  get redisUrl() {
+    return getEnv('REDIS_URL', 'redis://localhost:6379');
+  },
+  get redisPassword() {
+    return getEnv('REDIS_PASSWORD', '');
+  },
+  get redisTtl() {
+    return parseInt(getEnv('REDIS_TTL', '3600'), 10);
+  },
+
   r2: {
-    accountId: process.env.R2_ACCOUNT_ID,
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    bucketName: process.env.R2_BUCKET_NAME,
-    publicBucketId: process.env.R2_PUBLIC_BUCKET_ID,
+    get accountId() {
+      return getEnv('R2_ACCOUNT_ID', '');
+    },
+    get accessKeyId() {
+      return getEnv('R2_ACCESS_KEY_ID', '');
+    },
+    get secretAccessKey() {
+      return getEnv('R2_SECRET_ACCESS_KEY', '');
+    },
+    get bucketName() {
+      return getEnv('R2_BUCKET_NAME', '');
+    },
+    get publicBucketId() {
+      return getEnv('R2_PUBLIC_BUCKET_ID', '');
+    },
     pathPrefix: 'products/',
   },
 };

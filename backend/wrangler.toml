@@ -1,0 +1,21 @@
+name = "vivid-vitablends-backend"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+main = "src/server.js"
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vivid-vitablends-db-prod"
+database_id = "fa86d58b-5333-45f7-a275-27ecabca54c3"
+migrations_dir = "prisma/migrations"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "b2be048d98ba4217bd837eaf8b0c836f"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "vivid-vitablends-prod"

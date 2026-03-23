@@ -1,6 +1,3 @@
-import redisClient from '../utils/redis.js';
-import logger from '../utils/logger.js';
-
 const rateLimiter = (options = {}) => {
   const {
     windowMs = 60000, // 1 minute
@@ -8,36 +5,42 @@ const rateLimiter = (options = {}) => {
     message = 'Too many requests, please try again later',
   } = options;
 
-  return async (req, res, next) => {
-    if (!redisClient) {
-      return next();
+  return async (c, next) => {
+    if (!c.env.KV) {
+      return await next();
     }
 
-    const key = `rate_limit:${req.ip}:${req.path}`;
+    const ip = c.req.header('cf-connecting-ip') || 'unknown';
+    const path = new URL(c.req.url).pathname;
+    const key = `rate_limit:${ip}:${path}`;
 
     try {
-      const current = await redisClient.get(key);
+      const current = await c.env.KV.get(key);
+      const count = current ? parseInt(current) + 1 : 1;
 
-      if (current && parseInt(current) >= max) {
-        logger.warn(`Rate limit exceeded for ${req.ip} on ${req.path}`);
-        return res.status(429).json({
-          success: false,
-          message,
-          code: 'RATE_LIMIT_EXCEEDED',
-        });
+      if (count > max) {
+        return c.json(
+          {
+            success: false,
+            message,
+            code: 'RATE_LIMIT_EXCEEDED',
+          },
+          429
+        );
       }
 
-      const multi = redisClient.multi();
-      multi.incr(key);
-      if (!current) {
-        multi.pExpire(key, windowMs);
-      }
-      await multi.exec();
+      const ttl = Math.max(60, Math.ceil(windowMs / 1000));
+      // Run the put operation in the background
+      c.executionCtx.waitUntil(
+        c.env.KV.put(key, count.toString(), { expirationTtl: ttl }).catch(
+          console.error
+        )
+      );
 
-      next();
+      await next();
     } catch (error) {
-      logger.error('Rate limiter error', error);
-      next();
+      console.error('Rate limiter error', error);
+      await next();
     }
   };
 };

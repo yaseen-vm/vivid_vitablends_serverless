@@ -2,63 +2,71 @@ import logger from '../utils/logger.js';
 import { z } from 'zod';
 
 export const validate = (schema) => {
-  return (req, res, next) => {
+  return async (c, next) => {
     try {
-      req.body = schema.parse(req.body);
-      next();
+      // Hono caches the body so calling req.json() here and in controller is safe
+      const body = await c.req.json();
+      schema.parse(body);
+      await next();
     } catch (error) {
       logger.warn('Validation failed', {
         errors: error.errors,
-        path: req.path,
+        path: c.req.path,
       });
-      next(
-        Object.assign(new Error('Validation failed'), {
-          statusCode: 400,
+      return c.json(
+        {
+          success: false,
+          message: 'Validation failed',
           code: 'VALIDATION_ERROR',
           errors: error.errors,
-        })
+        },
+        400
       );
     }
   };
 };
 
 export const validateQuery = (schema) => {
-  return (req, res, next) => {
+  return async (c, next) => {
     try {
-      req.query = schema.parse(req.query);
-      next();
+      schema.parse(c.req.query());
+      await next();
     } catch (error) {
       logger.warn('Query validation failed', {
         errors: error.errors,
-        path: req.path,
+        path: c.req.path,
       });
-      next(
-        Object.assign(new Error('Validation failed'), {
-          statusCode: 400,
+      return c.json(
+        {
+          success: false,
+          message: 'Validation failed',
           code: 'VALIDATION_ERROR',
           errors: error.errors,
-        })
+        },
+        400
       );
     }
   };
 };
 
 export const validateParam = (paramName, schema) => {
-  return (req, res, next) => {
+  return async (c, next) => {
     try {
-      req.params[paramName] = schema.parse(req.params[paramName]);
-      next();
+      schema.parse(c.req.param(paramName));
+      await next();
     } catch (error) {
       logger.warn('Param validation failed', {
         errors: error.errors,
-        path: req.path,
+        path: c.req.path,
       });
-      next(
-        Object.assign(new Error('Invalid parameter'), {
-          statusCode: 400,
+      return c.json(
+        {
+          success: false,
+          message: 'Invalid parameter',
           code: 'VALIDATION_ERROR',
           errors: error.errors,
-        })
+        },
+        400
       );
     }
   };

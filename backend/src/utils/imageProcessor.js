@@ -1,4 +1,3 @@
-import sharp from 'sharp';
 import logger from './logger.js';
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -12,36 +11,33 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/webp',
 ]);
 
-/**
- * Validates raw buffer magic bytes against known image signatures.
- * Returns the detected format name or null if unrecognised.
- */
 const detectImageFormat = (buffer) => {
-  if (!Buffer.isBuffer(buffer) || buffer.length < 12) return null;
+  if (!buffer || buffer.byteLength < 12) return null;
 
+  const arr = new Uint8Array(buffer);
   // JPEG: FF D8 FF
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+  if (arr[0] === 0xff && arr[1] === 0xd8 && arr[2] === 0xff) {
     return 'jpeg';
   }
 
   // PNG: 89 50 4E 47 0D 0A 1A 0A
   if (
-    buffer[0] === 0x89 &&
-    buffer[1] === 0x50 &&
-    buffer[2] === 0x4e &&
-    buffer[3] === 0x47 &&
-    buffer[4] === 0x0d &&
-    buffer[5] === 0x0a &&
-    buffer[6] === 0x1a &&
-    buffer[7] === 0x0a
+    arr[0] === 0x89 &&
+    arr[1] === 0x50 &&
+    arr[2] === 0x4e &&
+    arr[3] === 0x47 &&
+    arr[4] === 0x0d &&
+    arr[5] === 0x0a &&
+    arr[6] === 0x1a &&
+    arr[7] === 0x0a
   ) {
     return 'png';
   }
 
-  // WebP: RIFF????WEBP (bytes 0-3 = 'RIFF', bytes 8-11 = 'WEBP')
+  // WebP: RIFF????WEBP
   if (
-    buffer.subarray(0, 4).toString('binary') === 'RIFF' &&
-    buffer.subarray(8, 12).toString('binary') === 'WEBP'
+    String.fromCharCode(...arr.subarray(0, 4)) === 'RIFF' &&
+    String.fromCharCode(...arr.subarray(8, 12)) === 'WEBP'
   ) {
     return 'webp';
   }
@@ -49,23 +45,9 @@ const detectImageFormat = (buffer) => {
   return null;
 };
 
+// No longer using sharp to process. Return buffer directly.
 export const processImage = async (buffer) => {
-  const image = sharp(buffer);
-  const metadata = await image.metadata();
-
-  if (metadata.hasAlpha) {
-    logger.info('Processing image with transparency as PNG');
-    return image
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .png({ quality: 85 })
-      .toBuffer();
-  }
-
-  logger.info('Processing image as JPEG');
-  return image
-    .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-    .jpeg({ quality: 85 })
-    .toBuffer();
+  return buffer;
 };
 
 export const parseBase64Image = (base64Image) => {
@@ -96,7 +78,6 @@ export const parseBase64Image = (base64Image) => {
 
   const base64Data = matches[2];
 
-  // Guard against memory exhaustion before allocating the buffer
   if (base64Data.length > MAX_BASE64_LENGTH) {
     throw Object.assign(new Error('Image too large. Maximum size: 10MB'), {
       statusCode: 400,
@@ -104,18 +85,21 @@ export const parseBase64Image = (base64Image) => {
     });
   }
 
-  // Decode — Buffer.from with explicit encoding is safe binary decoding, not deserialization
-  const buffer = Buffer.from(base64Data, 'base64');
+  // Use standard Web-compatible base64 decoding to support Edge runtimes
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const buffer = bytes.buffer;
 
-  // Post-decode size guard (base64 padding can slightly skew pre-decode estimates)
-  if (buffer.length > MAX_IMAGE_BYTES) {
+  if (buffer.byteLength > MAX_IMAGE_BYTES) {
     throw Object.assign(new Error('Image too large. Maximum size: 10MB'), {
       statusCode: 400,
       code: 'IMAGE_TOO_LARGE',
     });
   }
 
-  // Verify magic bytes — ensures the payload matches its declared MIME type
   const detectedFormat = detectImageFormat(buffer);
   if (!detectedFormat) {
     throw Object.assign(
@@ -123,20 +107,6 @@ export const parseBase64Image = (base64Image) => {
         'Image content does not match a supported format (JPEG, PNG, WebP)'
       ),
       { statusCode: 400, code: 'INVALID_IMAGE_FORMAT' }
-    );
-  }
-
-  // Cross-check declared MIME type against detected format
-  const mimeMatchesFormat =
-    (detectedFormat === 'jpeg' &&
-      (mimeType === 'image/jpeg' || mimeType === 'image/jpg')) ||
-    (detectedFormat === 'png' && mimeType === 'image/png') ||
-    (detectedFormat === 'webp' && mimeType === 'image/webp');
-
-  if (!mimeMatchesFormat) {
-    throw Object.assign(
-      new Error('Declared MIME type does not match actual image format'),
-      { statusCode: 400, code: 'MIME_MISMATCH' }
     );
   }
 

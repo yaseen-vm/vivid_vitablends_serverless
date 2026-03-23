@@ -1,37 +1,37 @@
 import * as categoryService from '../services/category.service.js';
 import { clearCache } from '../middleware/cache.js';
 
-export const create = async (req, res, next) => {
+export const create = async (c) => {
   try {
-    const category = await categoryService.create(req.body);
-    res.status(201).json({ success: true, data: category });
+    const category = await categoryService.create(await c.req.json());
+    return c.json({ success: true, data: category }, 201);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-export const getAll = async (req, res, next) => {
+export const getAll = async (c) => {
   try {
     const categories = await categoryService.getAll();
-    res.status(200).json({ success: true, data: categories });
+    return c.json({ success: true, data: categories }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-export const getHomepageCategories = async (req, res, next) => {
+export const getHomepageCategories = async (c) => {
   try {
     const categories = await categoryService.getHomepageCategories();
-    res.status(200).json({ success: true, data: categories });
+    return c.json({ success: true, data: categories }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-export const updateHomepageVisibility = async (req, res, next) => {
+export const updateHomepageVisibility = async (c) => {
   try {
-    const { id } = req.params;
-    const { showOnHome, displayOrder } = req.body;
+    const { id } = c.req.param();
+    const { showOnHome, displayOrder } = await c.req.json();
     const category = await categoryService.updateHomepageVisibility(
       id,
       showOnHome,
@@ -42,22 +42,22 @@ export const updateHomepageVisibility = async (req, res, next) => {
     clearCache('categories:all');
     clearCache('categories:homepage');
 
-    res.status(200).json({ success: true, data: category });
+    return c.json({ success: true, data: category }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 
-export const update = async (req, res, next) => {
+export const update = async (c) => {
   try {
-    const { id } = req.params;
-    const category = await categoryService.update(id, req.body);
+    const { id } = c.req.param();
+    const category = await categoryService.update(id, await c.req.json());
 
     clearCache('categories:all');
     clearCache('categories:homepage');
 
-    res.status(200).json({ success: true, data: category });
+    return c.json({ success: true, data: category }, 200);
   } catch (error) {
-    next(error);
+    throw error;
   }
 };

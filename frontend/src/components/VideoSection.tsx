@@ -1,5 +1,7 @@
 import { useRef, useEffect } from "react";
-import advideo from "@/assets/videos/ad.mp4";
+// Use a URL from R2 instead of a local import to bypass the 25MB Cloudflare Pages limit
+const advideo =
+  "https://pub-d1eff26db14646b3acd678170a22c163.r2.dev/videos/ad.mp4";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "react-router-dom";

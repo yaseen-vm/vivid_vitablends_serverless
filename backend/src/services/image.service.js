@@ -1,8 +1,6 @@
-import crypto from 'crypto';
-import sharp from 'sharp';
 import * as imageRepository from '../repositories/image.repository.js';
-import { parseBase64Image, processImage } from '../utils/imageProcessor.js';
-import config from '../config/index.js';
+import { parseBase64Image } from '../utils/imageProcessor.js';
+import { getHonoContext } from '../utils/context.js';
 import logger from '../utils/logger.js';
 
 export const upload = async (base64Image) => {
@@ -17,14 +15,23 @@ export const upload = async (base64Image) => {
   }
 
   logger.info('Processing image for upload');
-  const optimizedBuffer = await processImage(buffer);
-  const metadata = await sharp(optimizedBuffer).metadata();
-  const ext = metadata.format === 'png' ? 'png' : 'jpg';
-  const contentType = metadata.format === 'png' ? 'image/png' : 'image/jpeg';
-  const key = `${config.r2.pathPrefix}${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
 
-  await imageRepository.uploadToS3(optimizedBuffer, key, contentType);
-  const url = `https://pub-${config.r2.publicBucketId}.r2.dev/${key}`;
+  const matches = base64Image.match(
+    /^data:([a-zA-Z0-9]+\/[a-zA-Z0-9\-]+);base64,/
+  );
+  const contentType = matches ? matches[1].toLowerCase() : 'image/jpeg';
+  let ext = 'jpg';
+  if (contentType === 'image/png') ext = 'png';
+  if (contentType === 'image/webp') ext = 'webp';
+
+  const c = getHonoContext();
+  const pathPrefix = c?.env?.R2_PATH_PREFIX || 'products/';
+  const publicBucketId = c?.env?.R2_PUBLIC_BUCKET_ID || 'default-bucket-id';
+
+  const key = `${pathPrefix}${Date.now()}-${crypto.randomBytes(8).toString('hex')}.${ext}`;
+
+  await imageRepository.uploadToS3(buffer, key, contentType);
+  const url = `https://pub-${publicBucketId}.r2.dev/${key}`;
 
   logger.info('Image uploaded successfully', { key });
   return url;

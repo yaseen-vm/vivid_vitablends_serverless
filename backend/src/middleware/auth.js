@@ -1,27 +1,34 @@
 import { verifyToken } from '../utils/jwt.js';
 import logger from '../utils/logger.js';
 
-export const authenticate = (req, res, next) => {
+export const authenticate = async (c, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = c.req.header('authorization');
+    const token = authHeader?.split(' ')[1];
 
     if (!token) {
-      throw Object.assign(new Error('Authentication required'), {
-        statusCode: 401,
-        code: 'AUTH_REQUIRED',
-      });
+      return c.json(
+        {
+          success: false,
+          message: 'Authentication required',
+          code: 'AUTH_REQUIRED',
+        },
+        401
+      );
     }
 
-    const decoded = verifyToken(token);
-    req.user = decoded;
-    next();
+    const decoded = await verifyToken(token);
+    c.set('user', decoded);
+    await next();
   } catch (error) {
     logger.warn('Authentication failed', { error: error.message });
-    next(
-      Object.assign(new Error('Invalid or expired token'), {
-        statusCode: 401,
+    return c.json(
+      {
+        success: false,
+        message: 'Invalid or expired token',
         code: 'INVALID_TOKEN',
-      })
+      },
+      401
     );
   }
 };
