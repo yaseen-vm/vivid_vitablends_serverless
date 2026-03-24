@@ -7,6 +7,8 @@ import { EmptyState } from "./EmptyState";
 import { apiClient } from "@/lib/apiClient";
 import { API_BASE_URL } from "@/lib/config";
 
+import { authStorage } from "@/lib/storage";
+
 interface Message {
   id: string;
   name: string;
@@ -17,7 +19,7 @@ interface Message {
 }
 
 const fetchMessages = async (): Promise<Message[]> => {
-  const token = sessionStorage.getItem("adminToken");
+  const token = authStorage.getToken();
   if (!token) {
     throw new Error("Authentication required");
   }
