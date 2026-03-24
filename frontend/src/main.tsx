@@ -9,5 +9,8 @@ try {
   createRoot(root).render(<App />);
 } catch (error) {
   console.error("Failed to render app:", error);
-  root.innerHTML = `<div style="padding: 20px; color: red;">Error: ${error}</div>`;
+  const errorDiv = document.createElement("div");
+  errorDiv.style.cssText = "padding: 20px; color: red;";
+  errorDiv.textContent = `Error: ${error}`;
+  root.appendChild(errorDiv);
 }
