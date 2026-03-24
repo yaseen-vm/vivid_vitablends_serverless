@@ -1,10 +1,17 @@
+let memoryToken: string | null = null;
+let memoryAuth: string | null = null;
+
 export const authStorage = {
-  getToken: () => sessionStorage.getItem("adminToken"),
-  setToken: (token: string) => sessionStorage.setItem("adminToken", token),
-  getAuth: () => sessionStorage.getItem("adminAuth"),
-  setAuth: (value: string) => sessionStorage.setItem("adminAuth", value),
+  getToken: () => memoryToken,
+  setToken: (token: string) => {
+    memoryToken = token;
+  },
+  getAuth: () => memoryAuth,
+  setAuth: (value: string) => {
+    memoryAuth = value;
+  },
   clear: () => {
-    sessionStorage.removeItem("adminToken");
-    sessionStorage.removeItem("adminAuth");
+    memoryToken = null;
+    memoryAuth = null;
   },
 };

@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./config";
+import { authStorage } from "./storage";
 
 // Compute allowed origin once at module load — fail fast if config is bad
 const getAllowedOrigin = (): string => {
@@ -80,7 +81,7 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 // Hardcode the refresh path rather than interpolating API_BASE_URL again
 const REFRESH_URL = `${ALLOWED_ORIGIN}/api/admin/refresh`;
 
-const refreshToken = async (): Promise<string> => {
+export const refreshToken = async (): Promise<string> => {
   const response = await safeFetch(REFRESH_URL, {
     method: "POST",
     credentials: "include",
@@ -97,7 +98,8 @@ const refreshToken = async (): Promise<string> => {
     throw new Error("Malformed token in refresh response");
   }
 
-  sessionStorage.setItem("adminToken", newToken);
+  authStorage.setToken(newToken);
+  authStorage.setAuth("true");
   return newToken;
 };
 
@@ -109,11 +111,11 @@ export const apiClient = async (
     throw new Error(`Invalid API URL: ${url}`);
   }
 
-  let token = sessionStorage.getItem("adminToken");
+  let token = authStorage.getToken();
 
   // Validate token format (JWT has 3 parts separated by dots)
   if (token && token.split(".").length !== 3) {
-    sessionStorage.removeItem("adminToken");
+    authStorage.clear();
     token = null;
   }
 
@@ -177,7 +179,7 @@ export const apiClient = async (
         });
       } catch (error) {
         processQueue(error as Error, null);
-        sessionStorage.removeItem("adminToken");
+        authStorage.clear();
         if (window.location.hash !== "#/sys-admin-portal") {
           window.location.href = "/#/sys-admin-portal";
         }
