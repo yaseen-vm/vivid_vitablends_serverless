@@ -4,6 +4,11 @@ import { clearCache } from '../middleware/cache.js';
 export const create = async (c) => {
   try {
     const category = await categoryService.create(await c.req.json());
+
+    // Clear relevant caches
+    clearCache('categories:all');
+    clearCache('categories:homepage');
+
     return c.json({ success: true, data: category }, 201);
   } catch (error) {
     throw error;
