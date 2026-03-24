@@ -4,14 +4,15 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { EmptyCart } from "@/components/EmptyCart";
+import { calculateCartTotals } from "@/lib/cartUtils";
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity } = useCart();
   const [showDetails, setShowDetails] = useState(false);
 
-  const total = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const { subtotal, discount, total } = useMemo(() => {
+    return calculateCartTotals(cart);
   }, [cart]);
 
   return (
@@ -193,9 +194,21 @@ const CartPage = () => {
 
                 <div className="my-6 h-px bg-gray-200" />
 
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>₹ {total}</span>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Subtotal</span>
+                    <span>₹ {subtotal}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600 font-medium">
+                      <span>Discount (Above ₹1999)</span>
+                      <span>- ₹ {discount}</span>
+                    </div>
+                  )}
+                  <div className="pt-3 flex justify-between font-bold border-t border-gray-100">
+                    <span>Total</span>
+                    <span>₹ {total}</span>
+                  </div>
                 </div>
 
                 <div className="mt-6">
@@ -281,7 +294,20 @@ const CartPage = () => {
 
                   <div className="my-4 h-px bg-gray-200" />
 
-                  <div className="flex justify-between font-bold">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Subtotal</span>
+                      <span>₹ {subtotal}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm text-green-600 font-medium">
+                        <span>Discount</span>
+                        <span>- ₹ {discount}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 flex justify-between font-bold border-t border-gray-100">
                     <span>Total</span>
                     <span>₹ {total}</span>
                   </div>
