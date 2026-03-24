@@ -118,11 +118,11 @@ export const create = async (data) => {
     }
 
     // Recalculate and validate prices/total
-    let calculatedTotal = 0;
+    let calculatedSubtotal = 0;
     const verifiedItems = data.items.map((item) => {
       const dbProduct = productMap.get(item.productId);
       const itemTotal = dbProduct.price * item.quantity;
-      calculatedTotal += itemTotal;
+      calculatedSubtotal += itemTotal;
 
       // Optional: Check if price matches (useful for detecting manipulation attempts)
       if (Math.abs(item.price - dbProduct.price) > 0.01) {
@@ -141,11 +141,16 @@ export const create = async (data) => {
       };
     });
 
+    const discount = calculatedSubtotal > 1999 ? 200 : 0;
+    const calculatedTotal = calculatedSubtotal - discount;
+
     // Validate total (allowing for small rounding differences in floats)
     if (Math.abs(calculatedTotal - data.total) > 0.01) {
       logger.error('Order total mismatch', {
         clientTotal: data.total,
         calculatedTotal,
+        calculatedSubtotal,
+        discount,
       });
       throw Object.assign(new Error('Order total mismatch'), {
         statusCode: 400,

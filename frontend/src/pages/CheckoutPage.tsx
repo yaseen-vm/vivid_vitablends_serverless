@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { orderApi } from "@/services/api/orderApi";
 import { WHATSAPP_NUMBER } from "@/lib/config";
+import { calculateCartTotals } from "@/lib/cartUtils";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -27,11 +28,8 @@ const CheckoutPage = () => {
     return buyNowItem ? [buyNowItem] : cart;
   }, [buyNowItem, cart]);
 
-  const total = useMemo(() => {
-    return checkoutItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
+  const { subtotal, discount, total } = useMemo(() => {
+    return calculateCartTotals(checkoutItems);
   }, [checkoutItems]);
 
   const validateField = (field: string, value: string) => {
@@ -149,6 +147,9 @@ const CheckoutPage = () => {
       )
       .join("\n");
 
+    const discountText =
+      discount > 0 ? `\nSubtotal: ₹${subtotal}\nDiscount: -₹${discount}` : "";
+
     const message = `
 🛒 *New Order - Vivid Vitablends*
 
@@ -159,7 +160,7 @@ const CheckoutPage = () => {
 
 📦 Items:
 ${itemsText}
-
+${discountText}
 💰 Total: ₹${total}
 
 Please confirm availability & delivery time.
@@ -355,12 +356,24 @@ Please confirm availability & delivery time.
 
             <div className="my-6 h-px bg-gray-200" />
 
-            <div className="flex justify-between font-bold">
-              <span>Total</span>
-              <span>₹ {total}</span>
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span>₹ {subtotal}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-sm text-green-600 font-medium">
+                  <span>Discount (Above ₹1999)</span>
+                  <span>- ₹ {discount}</span>
+                </div>
+              )}
+              <div className="pt-3 flex justify-between font-bold border-t border-gray-100">
+                <span>Total</span>
+                <span>₹ {total}</span>
+              </div>
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="space-y-3">
               <Button
                 onClick={handleWhatsAppOrder}
                 className="w-full rounded-full bg-green-600 text-white hover:bg-green-700"

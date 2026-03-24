@@ -6,7 +6,7 @@ export default {
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}"
+    "./src/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -19,8 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
+        sans: ["Inter", "sans-serif"],
+        display: ["Playfair Display", "serif"],
       },
 
       colors: {
@@ -117,11 +117,15 @@ export default {
         /* 🔥 Badge Animation */
         "rotate-badge": "rotate-badge 14s linear infinite",
       },
+
+      transitionTimingFunction: {
+        smooth: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
     },
   },
 
   plugins: [
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    require("tailwindcss-animate")
+    require("tailwindcss-animate"),
   ],
 } satisfies Config;
