@@ -22,7 +22,12 @@ export const categoryApi = {
       method: "POST",
       body: JSON.stringify({ name }),
     });
-    if (!res.ok) throw new Error("Failed to create category");
+    if (!res.ok) {
+      if (res.status === 409) {
+        throw new Error("Category already exists");
+      }
+      throw new Error("Failed to create category");
+    }
     const json = await res.json();
     return json.data;
   },
@@ -49,7 +54,12 @@ export const categoryApi = {
       method: "PUT",
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Failed to update category");
+    if (!res.ok) {
+      if (res.status === 409) {
+        throw new Error("Category name already exists");
+      }
+      throw new Error("Failed to update category");
+    }
     const json = await res.json();
     return json.data;
   },
